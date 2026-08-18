@@ -139,6 +139,18 @@
   .field{margin-bottom:13px}
   .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
   .field .hint{font-size:11.5px;color:var(--muted);margin-top:4px}
+  /* 協会コードの選択リスト */
+  .suggest{position:absolute;left:0;right:0;top:calc(100% - 18px);z-index:60;
+    list-style:none;margin:4px 0 0;padding:4px;background:var(--panel);
+    border:1px solid var(--accent);border-radius:10px;box-shadow:0 6px 20px var(--shadow);
+    max-height:230px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  .suggest li{padding:10px 10px;border-radius:7px;cursor:pointer;line-height:1.35}
+  .suggest li:active,.suggest li.on{background:var(--accent-soft)}
+  .suggest .sg-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    font-size:14px;font-weight:600;letter-spacing:.02em}
+  .suggest .sg-name{display:block;font-size:12.5px;color:var(--muted);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .suggest .sg-none{color:var(--muted);font-size:12.5px;cursor:default}
   .modal-actions{display:flex;gap:8px;margin-top:18px;align-items:center}
   .modal-actions .primary{flex:1}
   #modalErr{color:var(--minus);font-size:12.5px;min-height:18px;margin-top:6px}
@@ -279,11 +291,12 @@
       <input type="text" id="mAmt" class="num" inputmode="numeric" autocomplete="off" placeholder="50,000">
     </div>
 
-    <div class="field">
+    <div class="field" style="position:relative">
       <label for="mCode">協会コード（英数字8桁）</label>
-      <input type="text" id="mCode" list="codeList" maxlength="8" autocomplete="off"
-             autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="04318178">
-      <datalist id="codeList"></datalist>
+      <input type="text" id="mCode" maxlength="8" autocomplete="off" role="combobox"
+             aria-expanded="false" aria-controls="codeSuggest"
+             autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="タップして選択、または入力">
+      <ul id="codeSuggest" class="suggest hidden"></ul>
       <div class="hint" id="mCodeHint"></div>
     </div>
 
@@ -388,12 +401,56 @@ function renderLots(){
   $("lotTotal").classList.toggle("hidden", lots.length === 0);
   $("lotTotalVal").textContent = yen(lots.reduce((s,l)=>s+l.amount,0));
 
-  const codes = new Set([...Object.keys(knownCodes), ...lots.map(l=>l.code)]);
-  if(fundIndex) Object.keys(fundIndex).forEach(c=>codes.add(c));
-  $("codeList").innerHTML = [...codes].sort().map(c=>{
-    const n = fundName(c);
-    return `<option value="${esc(c)}"${n?` label="${esc(c)}　${esc(n)}"`:""}></option>`;
-  }).join("");
+}
+
+/* ======================= 協会コードの選択リスト ======================= */
+/** 既知の協会コードを {code, name} の配列で返す（銘柄名がある順→コード順） */
+function knownFunds(){
+  const map = new Map();
+  const put = (c, n) => {
+    if(!/^[0-9A-Za-z]{8}$/.test(c)) return;
+    if(!map.has(c) || (!map.get(c) && n)) map.set(c, n || map.get(c) || "");
+  };
+  lots.forEach(l => put(l.code, l.name || fundName(l.code)));
+  Object.keys(knownCodes).forEach(c => put(c, knownCodes[c]));
+  if(fundIndex) Object.keys(fundIndex).forEach(c => put(c, fundIndex[c].name || ""));
+  return [...map.entries()]
+    .map(([code, name]) => ({code, name}))
+    .sort((a,b) => (b.name?1:0)-(a.name?1:0) || (a.code < b.code ? -1 : 1));
+}
+
+/** useFilter=false のときは入力済みの値を無視して全件出す（タップで一覧を見たい場合） */
+function showSuggest(useFilter){
+  const el = $("codeSuggest");
+  const q = useFilter ? $("mCode").value.trim().toUpperCase() : "";
+  const list = knownFunds().filter(f => !q || f.code.toUpperCase().includes(q));
+
+  if(!knownFunds().length){ hideSuggest(); return; }
+  el.innerHTML = list.length
+    ? list.map(f=>`<li data-code="${esc(f.code)}">
+        <span class="sg-code">${esc(f.code)}</span>
+        <span class="sg-name">${esc(f.name || "（銘柄名は取得後に入ります）")}</span></li>`).join("")
+    : `<li class="sg-none">一致する銘柄がありません。新しい協会コードはそのまま入力してください。</li>`;
+
+  [...el.children].forEach(li=>{
+    if(!li.dataset.code) return;
+    // タップで input の blur が先に走らないようにする
+    li.addEventListener("pointerdown", e => e.preventDefault());
+    li.onclick = () => pickCode(li.dataset.code);
+  });
+  el.classList.remove("hidden");
+  $("mCode").setAttribute("aria-expanded", "true");
+}
+function hideSuggest(){
+  $("codeSuggest").classList.add("hidden");
+  $("mCode").setAttribute("aria-expanded", "false");
+}
+function pickCode(code){
+  $("mCode").value = code;
+  const n = fundName(code);
+  if(n) $("mName").value = n;
+  updateCodeHint();
+  hideSuggest();
 }
 
 /* ============================ モーダル ============================ */
@@ -416,12 +473,16 @@ function openModal(id){
   $("mAcct").value = l ? l.acct : (lastLot ? lastLot.acct : ACCOUNTS[0]);
   $("mName").value = l ? (l.name||"") : "";
   $("modalErr").textContent = "";
+  hideSuggest();
   updateCodeHint();
   $("overlay").classList.add("open");
   document.body.style.overflow = "hidden";
-  setTimeout(()=>{ if(!l) $("mDate").focus(); }, 60);
+  setTimeout(()=>{
+    if(!l && !$("modal").contains(document.activeElement)) $("mDate").focus();
+  }, 60);
 }
 function closeModal(){
+  hideSuggest();
   $("overlay").classList.remove("open");
   document.body.style.overflow = "";
   editingId = null;
@@ -769,17 +830,29 @@ $("mCancel").onclick = closeModal;
 $("mDelete").onclick = deleteLot;
 $("calc").onclick    = () => { fundCache.clear(); fundIndex = null; calculate(); };
 $("mAmt").addEventListener("input", e => amountFormat(e.target));
+// 枠をタッチしたときは、すでに値が入っていても一覧を全件表示する
+$("mCode").addEventListener("focus", e => { e.target.select(); showSuggest(false); });
+$("mCode").addEventListener("click", () => showSuggest(false));
 $("mCode").addEventListener("input", e => {
   e.target.value = e.target.value.replace(/[^0-9A-Za-z]/g,"").slice(0,8);
   updateCodeHint();
   const c = e.target.value.trim();
   const n = fundName(c); if(n && !$("mName").value) $("mName").value = n;
+  showSuggest(true);
+});
+$("mCode").addEventListener("blur", () => setTimeout(hideSuggest, 150));
+// 入力欄・リスト以外を触ったら閉じる
+$("modal").addEventListener("pointerdown", e => {
+  if(!e.target.closest("#codeSuggest") && e.target !== $("mCode")) hideSuggest();
 });
 $("overlay").addEventListener("click", e => { if(e.target === $("overlay")) closeModal(); });
 document.addEventListener("keydown", e => {
   if(!$("overlay").classList.contains("open")) return;
-  if(e.key === "Escape") closeModal();
-  if(e.key === "Enter" && e.target.tagName === "INPUT") saveModal();
+  if(e.key === "Escape"){ if(!$("codeSuggest").classList.contains("hidden")) hideSuggest(); else closeModal(); }
+  if(e.key === "Enter" && e.target.tagName === "INPUT"){
+    if(!$("codeSuggest").classList.contains("hidden")){ hideSuggest(); return; }
+    saveModal();
+  }
 });
 $("clearAll").onclick = () => {
   if(!confirm("明細をすべて消去します。よろしいですか？")) return;
