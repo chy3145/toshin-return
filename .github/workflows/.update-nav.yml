@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       codes:
-        description: '追加する銘柄。「協会コード,ISINコード」の形式で入力（例: 04318178,JP90C000GKC6）。複数銘柄は半角スペース区切り。空欄なら登録済み銘柄の更新のみ'
+        description: '追加する協会コード（英数字8桁、例: 04318178）。複数銘柄は半角スペース区切り。空欄なら登録済み銘柄の更新のみ'
         required: false
         default: ''
   # 平日 21:30 JST（= 12:30 UTC）に自動更新
@@ -136,12 +136,24 @@ jobs:
               # エラー応答（1行のJSON）を弾きつつ、設定直後で行数の少ないファンドも通す
               return ("年月日" in text or "基準価" in text) and text.count("\n") >= 3
 
+          # 協会サイトの CSV は isinCd パラメータが無いと {"statusCode":null} を返すが、
+          # 返ってくるデータの中身は associFundCd だけで決まる（検証済み）。
+          # isinCd は「実在する ISIN であればどれでもよい」ため、実在が確認できている
+          # ISIN を通行証として渡している。銘柄ごとの ISIN を用意する必要はない。
+          ISIN_TOKENS = ["JP90C000FCD3", "JP90C000GKC6"]
+
           def plain(code, isin):
               return http_get(CSV_EP + "?" + urllib.parse.urlencode({"associFundCd": code}))
 
           def with_isin(code, isin):
               return http_get(CSV_EP + "?" + urllib.parse.urlencode(
                   {"associFundCd": code, "isinCd": isin}))
+
+          def with_token(token):
+              def fn(code, isin):
+                  return http_get(CSV_EP + "?" + urllib.parse.urlencode(
+                      {"associFundCd": code, "isinCd": token}))
+              return fn
 
           def with_session(code, isin):
               jar = http.cookiejar.CookieJar()
@@ -160,8 +172,9 @@ jobs:
               return http_get(CSV_EP + "?" + urllib.parse.urlencode(q), opener=op, referer=ref)
 
           def fetch(code, isin, attempts=3):
-              ways = ([("ISIN付きで取得", with_isin)] if isin else []) + [("そのまま取得", plain)]
-              ways.append(("セッションを張って取得", with_session))
+              ways = ([("この銘柄のISINで取得", with_isin)] if isin else [])
+              ways += [("ISINトークン %s で取得" % t, with_token(t)) for t in ISIN_TOKENS]
+              ways += [("協会コードのみで取得", plain), ("セッションを張って取得", with_session)]
               last = "原因不明"
               for n in range(1, attempts + 1):
                   for name, fn in ways:
@@ -293,10 +306,8 @@ jobs:
                   rows = normalize(text)
               except Exception as e:
                   log("  × 失敗: %s" % e)
-                  if not isin:
-                      log("    ヒント: この銘柄は ISIN コードが必要な可能性があります。")
-                      log("    Actions の Run workflow で「%s,JP90C0000000」の形式で" % code)
-                      log("    ISIN を指定して再実行してください。")
+                  log("    ヒント: 協会コードが正しいか確認してください。")
+                  log("    協会サイトが一時的に応答していないだけの場合もあります。")
                   bad += 1
                   continue
               with open(os.path.join(DATA, code + ".csv"), "w",
