@@ -139,18 +139,38 @@
   .field{margin-bottom:13px}
   .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
   .field .hint{font-size:11.5px;color:var(--muted);margin-top:4px}
-  /* 協会コードの選択リスト */
-  .suggest{position:absolute;left:0;right:0;top:calc(100% - 18px);z-index:60;
-    list-style:none;margin:4px 0 0;padding:4px;background:var(--panel);
-    border:1px solid var(--accent);border-radius:10px;box-shadow:0 6px 20px var(--shadow);
-    max-height:230px;overflow-y:auto;-webkit-overflow-scrolling:touch}
-  .suggest li{padding:10px 10px;border-radius:7px;cursor:pointer;line-height:1.35}
-  .suggest li:active,.suggest li.on{background:var(--accent-soft)}
-  .suggest .sg-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-    font-size:14px;font-weight:600;letter-spacing:.02em}
-  .suggest .sg-name{display:block;font-size:12.5px;color:var(--muted);
-    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .suggest .sg-none{color:var(--muted);font-size:12.5px;cursor:default}
+  /* 銘柄の選択ボタン */
+  .picker{width:100%;display:flex;align-items:center;gap:10px;text-align:left;
+    font-weight:400;font-size:16px;padding:10px 11px;border:1px solid var(--line);
+    background:var(--panel);border-radius:8px}
+  .picker:active{background:var(--accent-soft)}
+  #mCodeLabel{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #mCodeLabel.ph{color:var(--muted)}
+  #mCodeLabel b{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:600}
+  .picker-chev{color:var(--muted);font-size:17px;line-height:1}
+
+  /* 銘柄の選択シート */
+  #codeOverlay{position:fixed;inset:0;background:rgba(16,20,28,.5);display:none;z-index:70;
+    align-items:flex-end;justify-content:center}
+  #codeOverlay.open{display:flex}
+  #codeSheet{background:var(--panel);width:100%;max-width:460px;border-radius:16px 16px 0 0;
+    padding:18px 18px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -8px 32px var(--shadow);
+    max-height:88vh;display:flex;flex-direction:column}
+  #codeSheet h3{margin:0 0 12px;font-size:16px}
+  #codeSuggest{list-style:none;margin:0 -4px;padding:0;overflow-y:auto;
+    -webkit-overflow-scrolling:touch;flex:1;min-height:0}
+  #codeSuggest li{padding:13px 10px;border-radius:9px;cursor:pointer;line-height:1.35;
+    border-bottom:1px solid var(--line2)}
+  #codeSuggest li:last-child{border-bottom:none}
+  #codeSuggest li:active{background:var(--accent-soft)}
+  #codeSuggest li.sel{background:var(--accent-soft)}
+  .sg-code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14.5px;font-weight:600;letter-spacing:.02em}
+  .sg-name{display:block;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .sg-none{color:var(--muted);font-size:13px;text-align:center;padding:18px 8px}
+  .newcode{display:flex;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+  .newcode input{flex:1}
+  .newcode button{white-space:nowrap}
+  #codeSheetErr{color:var(--minus);font-size:12.5px;min-height:18px;margin-top:6px}
   .modal-actions{display:flex;gap:8px;margin-top:18px;align-items:center}
   .modal-actions .primary{flex:1}
   #modalErr{color:var(--minus);font-size:12.5px;min-height:18px;margin-top:6px}
@@ -291,12 +311,12 @@
       <input type="text" id="mAmt" class="num" inputmode="numeric" autocomplete="off" placeholder="50,000">
     </div>
 
-    <div class="field" style="position:relative">
-      <label for="mCode">協会コード（英数字8桁）</label>
-      <input type="text" id="mCode" maxlength="8" autocomplete="off" role="combobox"
-             aria-expanded="false" aria-controls="codeSuggest"
-             autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="タップして選択、または入力">
-      <ul id="codeSuggest" class="suggest hidden"></ul>
+    <div class="field">
+      <label>銘柄（協会コード）</label>
+      <button type="button" id="mCodePick" class="picker">
+        <span id="mCodeLabel" class="ph">タップして選択</span>
+        <span class="picker-chev">›</span>
+      </button>
       <div class="hint" id="mCodeHint"></div>
     </div>
 
@@ -323,6 +343,22 @@
   </div>
 </div>
 
+<!-- ==================== 銘柄の選択シート ==================== -->
+<div id="codeOverlay" role="dialog" aria-modal="true" aria-labelledby="codeSheetTitle">
+  <div id="codeSheet">
+    <h3 id="codeSheetTitle">銘柄を選ぶ</h3>
+    <ul id="codeSuggest"></ul>
+    <div class="newcode">
+      <input type="text" id="newCode" maxlength="8" inputmode="latin" autocomplete="off"
+             autocapitalize="characters" autocorrect="off" spellcheck="false"
+             placeholder="新しい協会コード（8桁）">
+      <button id="newCodeOk">追加</button>
+    </div>
+    <div id="codeSheetErr"></div>
+    <button id="codeCancel" class="ghost" style="width:100%;margin-top:4px">キャンセル</button>
+  </div>
+</div>
+
 <script>
 "use strict";
 
@@ -336,6 +372,7 @@ let lots = [];          // {id, date, amount, code, acct, name}
 let knownCodes = {};    // 協会コード -> 銘柄名
 let fundIndex = null;   // data/index.json
 const fundCache = new Map();
+let booted = false;
 const openFunds = new Set();   // 銘柄別で展開中の協会コード
 
 const SERVER_MODE = /^https?:$/.test(location.protocol) && /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
@@ -379,6 +416,7 @@ function showTab(which){
   $("paneReturn").classList.toggle("hidden", !isRet);
   $("paneLots").classList.toggle("hidden", isRet);
   try{ localStorage.setItem(TAB_KEY, isRet ? "return" : "lots"); }catch(e){}
+  if(isRet && booted) calculate();   // リターンタブに切り替えたら自動で再計算
   window.scrollTo({top:0, behavior:"instant" in window ? "instant" : "auto"});
 }
 
@@ -403,7 +441,9 @@ function renderLots(){
 
 }
 
-/* ======================= 協会コードの選択リスト ======================= */
+/* ======================= 銘柄（協会コード）の選択 ======================= */
+let selectedCode = "";   // モーダルで選択中の協会コード
+
 /** 既知の協会コードを {code, name} の配列で返す（銘柄名がある順→コード順） */
 function knownFunds(){
   const map = new Map();
@@ -419,38 +459,52 @@ function knownFunds(){
     .sort((a,b) => (b.name?1:0)-(a.name?1:0) || (a.code < b.code ? -1 : 1));
 }
 
-/** useFilter=false のときは入力済みの値を無視して全件出す（タップで一覧を見たい場合） */
-function showSuggest(useFilter){
-  const el = $("codeSuggest");
-  const q = useFilter ? $("mCode").value.trim().toUpperCase() : "";
-  const list = knownFunds().filter(f => !q || f.code.toUpperCase().includes(q));
-
-  if(!knownFunds().length){ hideSuggest(); return; }
-  el.innerHTML = list.length
-    ? list.map(f=>`<li data-code="${esc(f.code)}">
-        <span class="sg-code">${esc(f.code)}</span>
-        <span class="sg-name">${esc(f.name || "（銘柄名は取得後に入ります）")}</span></li>`).join("")
-    : `<li class="sg-none">一致する銘柄がありません。新しい協会コードはそのまま入力してください。</li>`;
-
-  [...el.children].forEach(li=>{
-    if(!li.dataset.code) return;
-    // タップで input の blur が先に走らないようにする
-    li.addEventListener("pointerdown", e => e.preventDefault());
-    li.onclick = () => pickCode(li.dataset.code);
-  });
-  el.classList.remove("hidden");
-  $("mCode").setAttribute("aria-expanded", "true");
-}
-function hideSuggest(){
-  $("codeSuggest").classList.add("hidden");
-  $("mCode").setAttribute("aria-expanded", "false");
-}
-function pickCode(code){
-  $("mCode").value = code;
-  const n = fundName(code);
-  if(n) $("mName").value = n;
+/** forceName=true のときは銘柄名を選んだ銘柄のものに上書きする（銘柄を選び直したとき） */
+function setSelectedCode(code, forceName){
+  selectedCode = code || "";
+  const lbl = $("mCodeLabel");
+  if(!selectedCode){
+    lbl.textContent = "タップして選択";
+    lbl.className = "ph";
+  }else{
+    const n = fundName(selectedCode);
+    lbl.innerHTML = `<b>${esc(selectedCode)}</b>${n ? "　" + esc(n) : ""}`;
+    lbl.className = "";
+    if(forceName) $("mName").value = n || "";
+    else if(n && !$("mName").value) $("mName").value = n;
+  }
   updateCodeHint();
-  hideSuggest();
+}
+
+function openCodeSheet(){
+  const list = knownFunds();
+  $("codeSuggest").innerHTML = list.length
+    ? list.map(f=>`<li data-code="${esc(f.code)}"${f.code===selectedCode?' class="sel"':""}>
+        <span class="sg-code">${esc(f.code)}</span>
+        <span class="sg-name">${esc(f.name || "（銘柄名はデータ取得後に入ります）")}</span></li>`).join("")
+    : `<li class="sg-none">まだ登録がありません。<br>下の欄に協会コードを入力してください。</li>`;
+  [...$("codeSuggest").children].forEach(li=>{
+    if(!li.dataset.code) return;
+    li.onclick = () => { setSelectedCode(li.dataset.code, true); closeCodeSheet(); };
+  });
+  $("newCode").value = "";
+  $("codeSheetErr").textContent = "";
+  $("codeOverlay").classList.add("open");
+}
+function closeCodeSheet(){
+  $("codeOverlay").classList.remove("open");
+  $("newCode").blur();
+}
+function addNewCode(){
+  const c = $("newCode").value.trim().replace(/[^0-9A-Za-z]/g,"");
+  if(!/^[0-9A-Za-z]{8}$/.test(c)){
+    $("codeSheetErr").textContent = "協会コードは英数字8桁で入力してください。";
+    return;
+  }
+  if(!(c in knownCodes)) knownCodes[c] = "";
+  store();
+  setSelectedCode(c, true);
+  closeCodeSheet();
 }
 
 /* ============================ モーダル ============================ */
@@ -469,12 +523,10 @@ function openModal(id){
   $("mDelete").classList.toggle("hidden", !l);
   $("mDate").value = l ? l.date : "";
   $("mAmt").value  = l ? comma(l.amount) : "";
-  $("mCode").value = l ? l.code : (lastLot ? lastLot.code : "");
   $("mAcct").value = l ? l.acct : (lastLot ? lastLot.acct : ACCOUNTS[0]);
   $("mName").value = l ? (l.name||"") : "";
+  setSelectedCode(l ? l.code : (lastLot ? lastLot.code : ""), false);
   $("modalErr").textContent = "";
-  hideSuggest();
-  updateCodeHint();
   $("overlay").classList.add("open");
   document.body.style.overflow = "hidden";
   setTimeout(()=>{
@@ -482,27 +534,27 @@ function openModal(id){
   }, 60);
 }
 function closeModal(){
-  hideSuggest();
+  closeCodeSheet();
   $("overlay").classList.remove("open");
   document.body.style.overflow = "";
   editingId = null;
 }
 function updateCodeHint(){
-  const c = $("mCode").value.trim();
-  const n = fundName(c);
-  $("mCodeHint").textContent = n ? c + "：" + n : "";
+  const c = selectedCode;
+  if(!c){ $("mCodeHint").textContent = "一覧から選ぶか、新しい協会コードを入力できます。"; return; }
+  $("mCodeHint").textContent = fundName(c) ? "" : "この銘柄はデータ未取得です。銘柄名は取得後に入ります。";
 }
 function saveModal(){
   const fail = m => { $("modalErr").textContent = m; };
   const date = $("mDate").value.trim();
   const amount = amountValue($("mAmt"));
-  const code = $("mCode").value.trim().replace(/\s/g,"");
+  const code = selectedCode;
   const acct = $("mAcct").value;
   const name = $("mName").value.trim();
 
   if(!date) return fail("約定日を入力してください。");
   if(!(amount > 0)) return fail("金額を入力してください。");
-  if(!/^[0-9A-Za-z]{8}$/.test(code)) return fail("協会コードは英数字8桁で入力してください。");
+  if(!/^[0-9A-Za-z]{8}$/.test(code)) return fail("銘柄を選択してください。");
 
   if(editingId) Object.assign(lots.find(x=>x.id===editingId), {date, amount, code, acct, name});
   else lots.push({id:newId(), date, amount, code, acct, name});
@@ -830,27 +882,21 @@ $("mCancel").onclick = closeModal;
 $("mDelete").onclick = deleteLot;
 $("calc").onclick    = () => { fundCache.clear(); fundIndex = null; calculate(); };
 $("mAmt").addEventListener("input", e => amountFormat(e.target));
-// 枠をタッチしたときは、すでに値が入っていても一覧を全件表示する
-$("mCode").addEventListener("focus", e => { e.target.select(); showSuggest(false); });
-$("mCode").addEventListener("click", () => showSuggest(false));
-$("mCode").addEventListener("input", e => {
-  e.target.value = e.target.value.replace(/[^0-9A-Za-z]/g,"").slice(0,8);
-  updateCodeHint();
-  const c = e.target.value.trim();
-  const n = fundName(c); if(n && !$("mName").value) $("mName").value = n;
-  showSuggest(true);
+$("mCodePick").onclick = openCodeSheet;
+$("codeCancel").onclick = closeCodeSheet;
+$("newCodeOk").onclick = addNewCode;
+$("newCode").addEventListener("input", e => {
+  e.target.value = e.target.value.replace(/[^0-9A-Za-z]/g,"").toUpperCase().slice(0,8);
+  $("codeSheetErr").textContent = "";
 });
-$("mCode").addEventListener("blur", () => setTimeout(hideSuggest, 150));
-// 入力欄・リスト以外を触ったら閉じる
-$("modal").addEventListener("pointerdown", e => {
-  if(!e.target.closest("#codeSuggest") && e.target !== $("mCode")) hideSuggest();
-});
+$("newCode").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); addNewCode(); } });
+$("codeOverlay").addEventListener("click", e => { if(e.target === $("codeOverlay")) closeCodeSheet(); });
 $("overlay").addEventListener("click", e => { if(e.target === $("overlay")) closeModal(); });
 document.addEventListener("keydown", e => {
-  if(!$("overlay").classList.contains("open")) return;
-  if(e.key === "Escape"){ if(!$("codeSuggest").classList.contains("hidden")) hideSuggest(); else closeModal(); }
+  if(!$("overlay").classList.contains("open") && !$("codeOverlay").classList.contains("open")) return;
+  if(e.key === "Escape"){ if($("codeOverlay").classList.contains("open")) closeCodeSheet(); else closeModal(); }
   if(e.key === "Enter" && e.target.tagName === "INPUT"){
-    if(!$("codeSuggest").classList.contains("hidden")){ hideSuggest(); return; }
+    if($("codeOverlay").classList.contains("open")) return;
     saveModal();
   }
 });
@@ -896,6 +942,7 @@ try{ showTab(localStorage.getItem(TAB_KEY) === "lots" ? "lots" : "return"); }
 catch(e){ showTab("return"); }
 // 明細が0件でも銘柄名の参照表は読み込んでおく（入力補助のため）
 loadFundIndex().then(renderLots);
+booted = true;
 calculate();
 
 if("serviceWorker" in navigator && window.isSecureContext){
