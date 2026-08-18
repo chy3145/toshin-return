@@ -23,14 +23,14 @@
     --bg:#f5f6f8; --panel:#ffffff; --line:#e2e5ea; --line2:#eef0f4;
     --ink:#1a1d23; --muted:#6b7280; --accent:#1f5fa8; --accent-soft:#eaf1fa;
     --plus:#0a7c4a; --minus:#b3261e; --warn:#8a5a00; --warn-bg:#fdf6e3; --warn-bd:rgba(138,90,0,.25);
-    --ok:#0a7c4a; --ok-bg:#eaf7f0; --ok-bd:rgba(10,124,74,.25);
+    --ok:#0a7c4a; --ok-bg:#eaf7f0; --ok-bd:rgba(10,124,74,.25); --shadow:rgba(16,24,40,.18);
   }
   @media (prefers-color-scheme: dark){
     :root{
       --bg:#14171c; --panel:#1c2027; --line:#2c323b; --line2:#242932;
       --ink:#e8eaee; --muted:#9aa3b0; --accent:#7fb3ec; --accent-soft:#1e2833;
       --plus:#4ecf90; --minus:#ff8a80; --warn:#e0b45f; --warn-bg:#2a2416; --warn-bd:rgba(224,180,95,.25);
-      --ok:#4ecf90; --ok-bg:#16261e; --ok-bd:rgba(78,207,144,.25);
+      --ok:#4ecf90; --ok-bg:#16261e; --ok-bd:rgba(78,207,144,.25); --shadow:rgba(0,0,0,.5);
     }
   }
   *{box-sizing:border-box}
@@ -40,6 +40,7 @@
     background:var(--bg); color:var(--ink); font-size:15px; line-height:1.6;
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
   }
+  @media all and (display-mode:standalone){ body{padding-top:calc(20px + env(safe-area-inset-top))} }
   .wrap{max-width:1080px;margin:0 auto}
   h1{font-size:19px;margin:0 0 4px;letter-spacing:.02em}
   .sub{color:var(--muted);font-size:12.5px;margin:0 0 20px}
@@ -51,16 +52,18 @@
   td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
   input,select,textarea{
     font:inherit;font-size:16px;color:var(--ink);background:var(--panel);
-    border:1px solid var(--line);border-radius:8px;padding:8px 9px;width:100%;-webkit-appearance:none;appearance:none;
+    border:1px solid var(--line);border-radius:8px;padding:10px 11px;width:100%;-webkit-appearance:none;appearance:none;
   }
   select{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
-    background-position:calc(100% - 15px) 52%,calc(100% - 10px) 52%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:28px}
+    background-position:calc(100% - 15px) 54%,calc(100% - 10px) 54%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:28px}
   input:focus,select:focus,textarea:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
   input.num{text-align:right;font-variant-numeric:tabular-nums}
-  button{font:inherit;font-size:15px;font-weight:600;cursor:pointer;border-radius:9px;padding:10px 16px;
+  button{font:inherit;font-size:15px;font-weight:600;cursor:pointer;border-radius:9px;padding:11px 16px;
     border:1px solid var(--line);background:var(--panel);color:var(--ink);-webkit-appearance:none}
   button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
-  button.ghost{padding:8px 12px;font-weight:400;color:var(--muted);font-size:13.5px}
+  button.ghost{padding:9px 12px;font-weight:400;color:var(--muted);font-size:13.5px}
+  button.danger{color:var(--minus);border-color:var(--line)}
+  button:disabled{opacity:.55}
   .row-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px}
   .spacer{flex:1}
   .plus{color:var(--plus)} .minus{color:var(--minus)}
@@ -80,36 +83,53 @@
   textarea{min-height:96px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;margin-top:8px}
   .drop{border:1.5px dashed var(--line);border-radius:10px;padding:18px 12px;text-align:center;color:var(--muted);font-size:13px;margin-top:10px}
   .drop.over{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
-  .tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:20px;background:var(--accent-soft);color:var(--accent)}
-  .del{color:var(--muted);border:none;background:none;font-size:20px;padding:2px 6px;line-height:1}
+  .tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:20px;background:var(--accent-soft);color:var(--accent)}
   .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
   .codelink{display:block;padding:7px 0;border-bottom:1px solid var(--line2)}
   .codelink:last-child{border-bottom:none}
-
-  /* ホーム画面アプリとして起動したときのステータスバー分の余白 */
-  @media all and (display-mode:standalone){
-    body{padding-top:calc(20px + env(safe-area-inset-top))}
-  }
-  /* 「ホーム画面に追加」の案内 */
-  #a2hs{display:none;background:var(--accent-soft);border:1px solid var(--accent);
-    color:var(--ink);border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:13.5px;position:relative}
+  #a2hs{display:none;background:var(--accent-soft);border:1px solid var(--accent);border-radius:12px;
+    padding:12px 32px 12px 14px;margin-bottom:16px;font-size:13.5px;position:relative}
   #a2hs b{color:var(--accent)}
   #a2hsClose{position:absolute;top:4px;right:6px;background:none;border:none;color:var(--muted);font-size:19px;padding:2px 6px}
 
-  /* ---- 入力行：スマホでは縦積みカード ---- */
+  /* ---------- 明細リスト ---------- */
+  #lotList{list-style:none;margin:0;padding:0}
+  #lotList li{display:flex;align-items:center;gap:12px;padding:12px 6px;border-bottom:1px solid var(--line2);cursor:pointer}
+  #lotList li:last-child{border-bottom:none}
+  #lotList li:active{background:var(--accent-soft)}
+  .li-main{flex:1;min-width:0}
+  .li-name{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .li-sub{font-size:12px;color:var(--muted);margin-top:1px}
+  .li-amt{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+  .li-chev{color:var(--muted);font-size:17px;line-height:1}
+  .empty{color:var(--muted);font-size:13.5px;text-align:center;padding:22px 8px}
+  .totalline{display:flex;justify-content:space-between;padding:12px 6px 0;margin-top:4px;
+    border-top:2px solid var(--line);font-size:13.5px;color:var(--muted)}
+  .totalline b{color:var(--ink);font-variant-numeric:tabular-nums}
+
+  /* ---------- モーダル ---------- */
+  #overlay{position:fixed;inset:0;background:rgba(16,20,28,.45);display:none;z-index:50;
+    align-items:flex-end;justify-content:center;padding:0}
+  #overlay.open{display:flex}
+  #modal{background:var(--panel);width:100%;max-width:460px;border-radius:16px 16px 0 0;
+    padding:18px 18px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -8px 32px var(--shadow);
+    max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch}
+  #modal h3{margin:0 0 14px;font-size:16px}
+  .field{margin-bottom:13px}
+  .field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}
+  .field .hint{font-size:11.5px;color:var(--muted);margin-top:4px}
+  .modal-actions{display:flex;gap:8px;margin-top:18px;align-items:center}
+  .modal-actions .primary{flex:1}
+  #modalErr{color:var(--minus);font-size:12.5px;min-height:18px;margin-top:6px}
+  @media (min-width:560px){
+    #overlay{align-items:center;padding:20px}
+    #modal{border-radius:16px;padding-bottom:18px}
+  }
+
   @media (max-width:700px){
     body{padding:16px 12px 50px}
-    #lotTable thead{display:none}
-    #lotTable, #lotTable tbody, #lotTable tr, #lotTable td{display:block;width:100%}
-    #lotTable tr{border:1px solid var(--line);border-radius:10px;padding:10px 12px 12px;margin-bottom:12px;position:relative}
-    #lotTable td{border:none;padding:6px 0}
-    #lotTable td::before{content:attr(data-l);display:block;font-size:11px;color:var(--muted);margin-bottom:3px}
-    #lotTable td.act{position:absolute;top:4px;right:4px;width:auto;padding:0}
-    #lotTable td.act::before{content:""}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
     .big{font-size:19px}
     th,td{font-size:12.5px}
-    /* 結果表は縮めずに横スクロールさせる */
     .scroll table{min-width:600px}
     .scroll{margin:0 -16px;padding:0 16px}
     .cards{grid-template-columns:1fr 1fr}
@@ -123,72 +143,61 @@
   <div id="a2hs">
     <button id="a2hsClose" aria-label="閉じる">×</button>
     <b>ホーム画面に追加できます</b><br>
-    Safari下部の <b>共有ボタン（□に↑）</b> → <b>「ホーム画面に追加」</b> で、アプリのように開けるようになります。
+    Safari下部の <b>共有ボタン（□に↑）</b> → <b>「ホーム画面に追加」</b> で、アプリのように開けます。
     追加後はオフラインでも起動します。
   </div>
 
   <h1>投資信託リターン計算ツール</h1>
   <p class="sub">
-    約定日・金額・協会コード・口座種別を入力すると、投資信託協会「投信総合検索ライブラリー」の基準価額をもとに、
+    約定日・金額・協会コード・口座種別を登録すると、投資信託協会の基準価額をもとに、
     銘柄ごとの年率換算リターン（CAGR・分配金再投資ベース）を計算します。
   </p>
 
-  <!-- ================= 入力 ================= -->
+  <!-- ================= 明細 ================= -->
   <div class="panel">
-    <h2>買付明細の入力</h2>
-    <table id="lotTable">
-      <thead>
-        <tr>
-          <th style="width:150px">約定日</th>
-          <th class="num" style="width:120px">金額（円）</th>
-          <th style="width:115px">協会コード</th>
-          <th style="width:115px">口座種別</th>
-          <th>銘柄名（任意メモ）</th>
-          <th style="width:34px"></th>
-        </tr>
-      </thead>
-      <tbody id="lotBody"></tbody>
-    </table>
+    <h2>買付明細</h2>
+    <ul id="lotList"></ul>
+    <div id="lotEmpty" class="empty">まだ明細がありません。<br>「＋ 明細を追加する」から登録してください。</div>
+    <div id="lotTotal" class="totalline hidden"><span>投資元本 合計</span><b id="lotTotalVal">0 円</b></div>
 
     <div class="row-actions">
-      <button id="addRow">＋ 行を追加</button>
-      <button id="pasteToggle" class="ghost">まとめて入力</button>
-      <button id="clearAll" class="ghost">全消去</button>
+      <button id="addLot">＋ 明細を追加する</button>
       <span class="spacer"></span>
       <button id="calc" class="primary">リターンを計算</button>
     </div>
+    <div class="row-actions" style="margin-top:8px">
+      <button id="bulkToggle" class="ghost">まとめて入力</button>
+      <button id="exportBtn" class="ghost">バックアップ</button>
+      <button id="clearAll" class="ghost">全消去</button>
+    </div>
 
-    <div id="pasteArea" class="hidden">
-      <textarea id="pasteBox" placeholder="1行1件（カンマ or タブ区切り）&#10;約定日, 金額, 協会コード, 口座種別&#10;2024-01-15, 50000, 79312165, 積立"></textarea>
-      <div class="row-actions"><button id="pasteApply">この内容を取り込む</button></div>
+    <div id="bulkArea" class="hidden">
+      <textarea id="bulkBox" placeholder="1行1件（カンマ or タブ区切り）&#10;約定日, 金額, 協会コード, 口座種別&#10;2024-01-15, 50000, 04318178, 積立"></textarea>
+      <div class="row-actions"><button id="bulkApply">この内容を取り込む</button></div>
     </div>
 
     <div id="status" class="status"></div>
   </div>
 
-  <!-- ============ 基準価額CSVの手動読み込み ============ -->
+  <!-- ============ 基準価額データの手動読み込み ============ -->
   <div class="panel hidden" id="manualPanel">
     <h2>基準価額データの読み込み</h2>
     <p style="margin:0;font-size:13px;color:var(--muted)" id="manualMsg"></p>
-
     <div id="csvLinks" style="margin-top:10px;font-size:13.5px"></div>
-
     <div class="drop" id="drop">
       <label style="color:var(--accent);text-decoration:underline;cursor:pointer;font-weight:600">
         ダウンロードしたCSVを選ぶ<input type="file" id="filePick" accept=".csv,text/csv,text/comma-separated-values" multiple class="hidden">
       </label>
       <div style="margin-top:6px;font-size:12px">（パソコンならドラッグ＆ドロップも可）</div>
     </div>
-
     <details>
       <summary>CSVの中身をコピー＆ペーストで貼る</summary>
-      <div class="grid2" style="margin-top:8px;gap:8px">
+      <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:8px">
         <input type="text" id="pasteCode" placeholder="協会コード（8桁）" maxlength="8">
-        <button id="pasteCsvApply">この内容を取り込む</button>
+        <button id="pasteCsvApply">取り込む</button>
       </div>
       <textarea id="pasteCsv" placeholder="年月日,基準価額(円),純資産総額（百万円）,分配金,決算期&#10;2024年01月15日,14679,12345,0,"></textarea>
     </details>
-
     <div id="loadedList" style="margin-top:10px;font-size:12.5px;color:var(--muted)"></div>
   </div>
 
@@ -220,7 +229,7 @@
     </div>
 
     <div class="panel">
-      <h2>買付明細</h2>
+      <h2>買付ごとの内訳</h2>
       <div class="scroll"><table>
         <thead><tr><th>約定日</th><th>銘柄</th><th>口座</th><th class="num">金額</th><th class="num">約定日<br>基準価額</th>
           <th class="num">評価額</th><th class="num">損益</th><th class="num">保有<br>日数</th><th class="num">年率<br>リターン</th></tr></thead>
@@ -232,7 +241,7 @@
     <details>
       <summary>計算方法について</summary>
       <div style="margin-top:8px;color:var(--muted)">
-        <p style="margin:0 0 8px"><b>分配金再投資</b>：協会CSVの基準価額と分配金から日次の再投資指数
+        <p style="margin:0 0 8px"><b>分配金再投資</b>：基準価額と分配金から日次の再投資指数
           <code>TR(t) = TR(t-1) × (基準価額(t) + 分配金(t)) ÷ 基準価額(t-1)</code> を作り、
           約定日から評価日までの倍率 <code>TR(評価日) ÷ TR(約定日)</code> を各買付に適用します。</p>
         <p style="margin:0 0 8px"><b>年率換算（CAGR）</b>：買付ごとに <code>倍率^(365 ÷ 保有日数) − 1</code>。
@@ -249,70 +258,222 @@
   </p>
 </div>
 
+<!-- ================= 入力モーダル ================= -->
+<div id="overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div id="modal">
+    <h3 id="modalTitle">明細を追加</h3>
+
+    <div class="field">
+      <label for="mDate">約定日</label>
+      <input type="date" id="mDate">
+    </div>
+
+    <div class="field">
+      <label for="mAmt">金額（円）</label>
+      <input type="text" id="mAmt" class="num" inputmode="numeric" autocomplete="off" placeholder="50,000">
+    </div>
+
+    <div class="field">
+      <label for="mCode">協会コード（英数字8桁）</label>
+      <input type="text" id="mCode" list="codeList" maxlength="8" autocomplete="off"
+             autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="04318178">
+      <datalist id="codeList"></datalist>
+      <div class="hint" id="mCodeHint">過去に使ったコードは候補に出ます。</div>
+    </div>
+
+    <div class="field">
+      <label for="mAcct">口座種別</label>
+      <select id="mAcct"></select>
+    </div>
+
+    <div class="field">
+      <label for="mName">銘柄名（任意メモ）</label>
+      <input type="text" id="mName" autocomplete="off" placeholder="空欄可">
+    </div>
+
+    <div id="modalErr"></div>
+
+    <div class="modal-actions">
+      <button id="mDelete" class="danger hidden">削除</button>
+      <button id="mCancel" class="ghost">キャンセル</button>
+      <button id="mSave" class="primary">保存</button>
+    </div>
+  </div>
+</div>
+
 <script>
 "use strict";
 
 const ACCOUNTS = ["積立", "成長投資", "特定"];
-const STORE_KEY = "toshin-return-lots-v1";
-const fundCache = new Map();
-const SERVER_MODE = /^https?:$/.test(location.protocol) && /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+const LOTS_KEY  = "toshin-return-lots-v2";
+const CODES_KEY = "toshin-return-codes-v1";
 const $ = (id) => document.getElementById(id);
 
-const CSV_URL = code => `https://toushin-lib.fwg.ne.jp/FdsWeb/FDST030000/csv-file-download?associFundCd=${encodeURIComponent(code)}`;
+let lots = [];        // {id, date, amount, code, acct, name}
+let knownCodes = {};  // code -> 銘柄名
+const fundCache = new Map();
+let fundIndex = null; // data/index.json の内容
+let autoFetchBroken = false;
 
-/* 自動取得の経路。ブラウザから協会サイトへ直接は CORS で弾かれるため、
-   公開CORSプロキシを順に試す。すべて失敗したら手動読み込みに切り替える。 */
+const SERVER_MODE = /^https?:$/.test(location.protocol) && /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+const CSV_URL = code => `https://toushin-lib.fwg.ne.jp/FdsWeb/FDST030000/csv-file-download?associFundCd=${encodeURIComponent(code)}`;
 const ROUTES = [
-  {name:"直接",         url: u => u},
   {name:"allorigins",   url: u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`},
   {name:"corsproxy.io", url: u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`},
   {name:"codetabs",     url: u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`},
   {name:"isomorphic",   url: u => `https://cors.isomorphic-git.org/${u}`}
 ];
 
-/* ============================ 入力行 ============================ */
-function makeRow(v){
-  v = v || {};
-  const tr = document.createElement("tr");
-  tr.innerHTML = `
-    <td data-l="約定日"><input type="date" class="f-date"></td>
-    <td data-l="金額（円）"><input type="text" inputmode="numeric" class="num f-amt" placeholder="50000"></td>
-    <td data-l="協会コード（8桁）"><input type="text" inputmode="latin" autocapitalize="characters" autocorrect="off" class="f-code" maxlength="8" placeholder="79312165"></td>
-    <td data-l="口座種別"><select class="f-acct">${ACCOUNTS.map(a=>`<option>${a}</option>`).join("")}</select></td>
-    <td data-l="銘柄名（任意メモ）"><input type="text" class="f-name" placeholder="空欄可"></td>
-    <td class="act"><button class="del" title="削除" aria-label="削除">×</button></td>`;
-  tr.querySelector(".f-date").value = v.date || "";
-  tr.querySelector(".f-amt").value  = v.amount != null ? v.amount : "";
-  tr.querySelector(".f-code").value = v.code || "";
-  tr.querySelector(".f-acct").value = ACCOUNTS.includes(v.acct) ? v.acct : ACCOUNTS[0];
-  tr.querySelector(".f-name").value = v.name || "";
-  tr.querySelector(".del").onclick = () => {
-    tr.remove();
-    if(!$("lotBody").children.length) addRow();
-    save(); refreshManualPanel();
-  };
-  tr.addEventListener("input", save);
-  tr.addEventListener("change", save);
-  return tr;
-}
-function addRow(v){ $("lotBody").appendChild(makeRow(v)); }
-
-function readRows(){
-  return [...$("lotBody").children].map(tr => ({
-    date : tr.querySelector(".f-date").value.trim(),
-    amount: String(tr.querySelector(".f-amt").value).replace(/[,，\s円]/g,""),
-    code : tr.querySelector(".f-code").value.trim().replace(/\s/g,""),
-    acct : tr.querySelector(".f-acct").value,
-    name : tr.querySelector(".f-name").value.trim()
-  }));
-}
-function save(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(readRows())); }catch(e){} }
-function load(){
+/* ============================ 保存・読み込み ============================ */
+function store(){
   try{
-    const arr = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
-    if(Array.isArray(arr) && arr.length){ arr.forEach(addRow); return; }
+    localStorage.setItem(LOTS_KEY,  JSON.stringify(lots));
+    localStorage.setItem(CODES_KEY, JSON.stringify(knownCodes));
   }catch(e){}
-  addRow(); addRow(); addRow();
+}
+function restore(){
+  try{
+    const a = JSON.parse(localStorage.getItem(LOTS_KEY) || "null");
+    if(Array.isArray(a)) lots = a.filter(l => l && l.date && l.code);
+  }catch(e){}
+  try{
+    const c = JSON.parse(localStorage.getItem(CODES_KEY) || "null");
+    if(c && typeof c === "object") knownCodes = c;
+  }catch(e){}
+  // 旧バージョン（表形式）のデータがあれば引き継ぐ
+  if(!lots.length){
+    try{
+      const old = JSON.parse(localStorage.getItem("toshin-return-lots-v1") || "null");
+      if(Array.isArray(old)){
+        old.forEach(o=>{
+          const amt = Number(String(o.amount).replace(/[^\d]/g,""));
+          if(o.date && amt>0 && /^[0-9A-Za-z]{8}$/.test(o.code||""))
+            lots.push({id:newId(), date:o.date, amount:amt, code:o.code,
+                       acct:ACCOUNTS.includes(o.acct)?o.acct:ACCOUNTS[0], name:o.name||""});
+        });
+        if(lots.length) store();
+      }
+    }catch(e){}
+  }
+}
+let idSeq = 0;
+function newId(){
+  let id;
+  do { id = "lot" + (++idSeq); } while(lots.some(l => l.id === id));
+  return id;
+}
+
+/* ============================ 表示ヘルパー ============================ */
+const comma = n => Math.round(n).toLocaleString("ja-JP");
+const yen = n => (n<0?"−":"") + comma(Math.abs(n)) + " 円";
+const pct = r => (r==null||!isFinite(r)) ? "—" : (r>=0?"+":"−") + (Math.abs(r)*100).toFixed(1) + " %";
+const cls = n => n>0 ? "plus" : n<0 ? "minus" : "";
+const days2y = d => (d/365).toFixed(1) + " 年";
+const esc = s => String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function setStatus(msg, isErr){
+  const el = $("status"); el.textContent = msg || "";
+  el.style.color = isErr ? "var(--minus)" : "var(--muted)";
+}
+function fundName(code){
+  return knownCodes[code] || (fundIndex && fundIndex[code] && fundIndex[code].name) || "";
+}
+function labelFor(lot){ return lot.name || fundName(lot.code) || lot.code; }
+
+/* ============================ 明細リスト ============================ */
+function renderLots(){
+  lots.sort((a,b)=> a.date<b.date ? -1 : a.date>b.date ? 1 : 0);
+  const ul = $("lotList");
+  ul.innerHTML = lots.map(l=>`
+    <li data-id="${l.id}">
+      <div class="li-main">
+        <div class="li-name">${esc(labelFor(l))}</div>
+        <div class="li-sub">${l.date}　<span class="tag">${esc(l.acct)}</span>　${esc(l.code)}</div>
+      </div>
+      <div class="li-amt">${comma(l.amount)} 円</div>
+      <div class="li-chev">›</div>
+    </li>`).join("");
+  [...ul.children].forEach(li => li.onclick = () => openModal(li.dataset.id));
+
+  $("lotEmpty").classList.toggle("hidden", lots.length > 0);
+  $("lotTotal").classList.toggle("hidden", lots.length === 0);
+  $("lotTotalVal").textContent = yen(lots.reduce((s,l)=>s+l.amount,0));
+
+  // 協会コードの入力候補
+  const codes = new Set([...Object.keys(knownCodes), ...lots.map(l=>l.code)]);
+  if(fundIndex) Object.keys(fundIndex).forEach(c=>codes.add(c));
+  $("codeList").innerHTML = [...codes].sort().map(c=>{
+    const n = fundName(c);
+    return `<option value="${esc(c)}"${n?` label="${esc(c)}　${esc(n)}"`:""}>${n?esc(n):""}</option>`;
+  }).join("");
+
+  refreshManualPanel();
+}
+
+/* ============================ モーダル ============================ */
+let editingId = null;
+
+function amountFormat(el){
+  const digits = el.value.replace(/[^\d]/g, "").slice(0, 12);
+  el.value = digits ? Number(digits).toLocaleString("ja-JP") : "";
+}
+const amountValue = el => Number(el.value.replace(/[^\d]/g, "")) || 0;
+
+function openModal(id){
+  editingId = id || null;
+  const l = id ? lots.find(x=>x.id===id) : null;
+  $("modalTitle").textContent = l ? "明細を編集" : "明細を追加";
+  $("mDelete").classList.toggle("hidden", !l);
+  $("mDate").value = l ? l.date : "";
+  $("mAmt").value  = l ? comma(l.amount) : "";
+  $("mCode").value = l ? l.code : (lots.length ? lots[lots.length-1].code : "");
+  $("mAcct").value = l ? l.acct : (lots.length ? lots[lots.length-1].acct : ACCOUNTS[0]);
+  $("mName").value = l ? (l.name||"") : "";
+  $("modalErr").textContent = "";
+  updateCodeHint();
+  $("overlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+  setTimeout(()=>{ if(!l) $("mDate").focus(); }, 60);
+}
+function closeModal(){
+  $("overlay").classList.remove("open");
+  document.body.style.overflow = "";
+  editingId = null;
+}
+function updateCodeHint(){
+  const c = $("mCode").value.trim();
+  const n = fundName(c);
+  $("mCodeHint").textContent = n ? `${c}：${n}`
+    : "過去に使ったコードは候補に出ます。日経やYahoo!ファイナンスの投信ページで「ファンドコード」として確認できます。";
+}
+function saveModal(){
+  const date = $("mDate").value.trim();
+  const amount = amountValue($("mAmt"));
+  const code = $("mCode").value.trim().replace(/\s/g,"");
+  const acct = $("mAcct").value;
+  const name = $("mName").value.trim();
+
+  if(!date){ return fail("約定日を入力してください。"); }
+  if(!(amount > 0)){ return fail("金額を入力してください。"); }
+  if(!/^[0-9A-Za-z]{8}$/.test(code)){ return fail("協会コードは英数字8桁で入力してください。"); }
+
+  if(editingId){
+    const l = lots.find(x=>x.id===editingId);
+    Object.assign(l, {date, amount, code, acct, name});
+  }else{
+    lots.push({id:newId(), date, amount, code, acct, name});
+  }
+  if(name) knownCodes[code] = name;
+  else if(!(code in knownCodes)) knownCodes[code] = "";
+  store(); renderLots(); closeModal();
+  setStatus("");
+
+  function fail(msg){ $("modalErr").textContent = msg; }
+}
+function deleteLot(){
+  if(!editingId) return;
+  if(!confirm("この明細を削除します。よろしいですか？")) return;
+  lots = lots.filter(x=>x.id!==editingId);
+  store(); renderLots(); closeModal();
 }
 
 /* ============================ CSV解析 ============================ */
@@ -333,19 +494,21 @@ function splitCsvLine(line){
   return out.map(s=>s.trim());
 }
 
+/** 協会の生CSV（Shift-JIS・和文ヘッダー）と、data/*.csv の正規化形式の両方に対応 */
 function parseCsvText(text){
   const lines = text.replace(/\r\n?/g,"\n").split("\n").filter(l => l.trim());
   if(!lines.length) throw new Error("CSVが空です");
-  const header = splitCsvLine(lines[0]).map(h => h.replace(/[\s　]/g,""));
+  const header = splitCsvLine(lines[0]).map(h => h.replace(/[\s　]/g,"").toLowerCase());
+
   let iDate=-1, iNav=-1, iDiv=-1;
   header.forEach((h,i)=>{
-    if(iDate<0 && /年月日|日付|基準日/.test(h)) iDate=i;
-    else if(iNav<0 && /基準価/.test(h)) iNav=i;
-    else if(iDiv<0 && /分配金/.test(h)) iDiv=i;
+    if(iDate<0 && (/年月日|日付|基準日/.test(h) || h==="date")) iDate=i;
+    else if(iNav<0 && (/基準価/.test(h) || h==="nav")) iNav=i;
+    else if(iDiv<0 && (/分配金/.test(h) || h==="div")) iDiv=i;
   });
   if(iDate<0) iDate=0;
   if(iNav<0)  iNav=1;
-  if(iDiv<0)  iDiv = header.length>3 ? 3 : -1;
+  if(iDiv<0)  iDiv = header.length>3 ? 3 : (header.length===3 ? 2 : -1);
 
   const num = s => {
     s=(s||"").replace(/[",　\s]/g,"");
@@ -380,10 +543,10 @@ function idxOnOrBefore(rows, dstr){
 }
 function decodeCsv(buf){
   const bytes = new Uint8Array(buf);
-  for(const enc of ["shift_jis","utf-8"]){
+  for(const enc of ["utf-8","shift_jis"]){
     try{
-      const t = new TextDecoder(enc).decode(bytes);
-      if(/年月日|基準価/.test(t)) return t;
+      const t = new TextDecoder(enc, {fatal:false}).decode(bytes);
+      if(/年月日|基準価|^date,/i.test(t)) return t;
     }catch(e){}
   }
   try{ return new TextDecoder("shift_jis").decode(bytes); }
@@ -391,71 +554,67 @@ function decodeCsv(buf){
 }
 
 /* ============================ データ取得 ============================ */
-let autoFetchBroken = false;   // 全経路が失敗したら true
-
-async function tryFetch(url, ms){
+async function tryFetch(url, ms, opts){
   const ctl = new AbortController();
   const timer = setTimeout(()=>ctl.abort(), ms);
-  try{ return await fetch(url, {signal: ctl.signal, redirect:"follow"}); }
+  try{ return await fetch(url, Object.assign({signal: ctl.signal}, opts||{})); }
   finally{ clearTimeout(timer); }
+}
+
+async function loadFundIndex(){
+  if(fundIndex !== null) return fundIndex;
+  try{
+    const res = await tryFetch("./data/index.json", 8000, {cache:"no-cache"});
+    fundIndex = res.ok ? await res.json() : {};
+  }catch(e){ fundIndex = {}; }
+  return fundIndex;
+}
+
+function register(code, rows, source){
+  const f = {code, rows, tr: buildTR(rows), source};
+  fundCache.set(code, f);
+  return f;
 }
 
 async function getFund(code, onProgress){
   if(fundCache.has(code)) return fundCache.get(code);
 
+  // (1) 同一オリジンに置かれたデータ（GitHub Actions が毎営業日更新）
+  try{
+    if(onProgress) onProgress(`${code} のデータを読み込み中…`);
+    const res = await tryFetch(`./data/${encodeURIComponent(code)}.csv`, 15000, {cache:"no-cache"});
+    if(res.ok){
+      const text = decodeCsv(await res.arrayBuffer());
+      const rows = parseCsvText(text);
+      if(rows.length > 1) return register(code, rows, "repo");
+    }
+  }catch(e){}
+
+  // (2) Mac のローカルサーバー
   if(SERVER_MODE){
-    const res = await tryFetch(`/api/nav?code=${encodeURIComponent(code)}`, 40000);
-    const json = await res.json();
-    if(json.error) throw new Error(json.error);
-    const f = {code, name: json.name || "", rows: json.rows, tr: buildTR(json.rows)};
-    fundCache.set(code, f); return f;
+    try{
+      const res = await tryFetch(`/api/nav?code=${encodeURIComponent(code)}`, 40000);
+      const json = await res.json();
+      if(!json.error) return register(code, json.rows, "local");
+    }catch(e){}
   }
 
-  if(autoFetchBroken) throw new Error(`銘柄 ${code} のCSVが未読込です`);
-
-  const target = CSV_URL(code);
-  if(onProgress) onProgress(`${code} の基準価額を取得中…`);
-
-  // 全経路を同時に試し、最初に成功したものを採用する（待ち時間を短くするため）
-  const attempts = ROUTES.map(async r => {
-    const res = await tryFetch(r.url(target), 15000);
-    if(!res.ok) throw new Error(`${r.name}: HTTP ${res.status}`);
-    const text = decodeCsv(await res.arrayBuffer());
-    if(!/年月日|基準価/.test(text)) throw new Error(`${r.name}: CSVではない応答`);
-    return parseCsvText(text);
-  });
-
-  let rows = null, lastErr = null;
-  const results = await Promise.allSettled(attempts);
-  for(const r of results){
-    if(r.status === "fulfilled"){ rows = r.value; break; }
-    lastErr = r.reason;
-  }
-  if(!rows){
+  // (3) 公開プロキシ経由で協会サイトから直接（動かないことがあります）
+  if(!autoFetchBroken){
+    if(onProgress) onProgress(`${code} を協会サイトから取得中…`);
+    const target = CSV_URL(code);
+    const results = await Promise.allSettled(ROUTES.map(async r => {
+      const res = await tryFetch(r.url(target), 15000);
+      if(!res.ok) throw new Error(`${r.name}: HTTP ${res.status}`);
+      const text = decodeCsv(await res.arrayBuffer());
+      if(!/年月日|基準価/.test(text)) throw new Error(`${r.name}: CSVではない応答`);
+      return parseCsvText(text);
+    }));
+    for(const r of results) if(r.status === "fulfilled") return register(code, r.value, "proxy");
     autoFetchBroken = true;
-    throw new Error(`自動取得に失敗しました（${lastErr ? lastErr.message : "不明"}）`);
   }
-  const f = {code, name:"", rows, tr: buildTR(rows)};
-  fundCache.set(code, f);
-  return f;
-}
 
-function registerCsv(code, text){
-  const rows = parseCsvText(text);
-  const f = {code, name:"", rows, tr: buildTR(rows)};
-  fundCache.set(code, f);
-  return f;
-}
-
-/* ============================ 表示ヘルパー ============================ */
-const yen = n => (n<0?"−":"") + Math.round(Math.abs(n)).toLocaleString("ja-JP") + " 円";
-const pct = r => (r==null||!isFinite(r)) ? "—" : (r>=0?"+":"−") + (Math.abs(r)*100).toFixed(1) + " %";
-const cls = n => n>0 ? "plus" : n<0 ? "minus" : "";
-const days2y = d => (d/365).toFixed(1) + " 年";
-const esc = s => String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-function setStatus(msg, isErr){
-  const el = $("status"); el.textContent = msg || "";
-  el.style.color = isErr ? "var(--minus)" : "var(--muted)";
+  throw new Error(`${code} の基準価額データがありません`);
 }
 
 /* ============================ 計算 ============================ */
@@ -474,64 +633,54 @@ function agg(list){
 let busy = false;
 async function calculate(){
   if(busy) return;
-  busy = true; $("calc").disabled = true; $("calc").style.opacity = .6;
+  busy = true; $("calc").disabled = true;
   try{ await runCalc(); }
-  finally{ busy = false; $("calc").disabled = false; $("calc").style.opacity = 1; }
+  finally{ busy = false; $("calc").disabled = false; }
 }
 
 async function runCalc(){
-  const raw = readRows();
-  const warn = [], lots = [], problems = [], valid = [];
+  if(!lots.length){ setStatus("明細がありません。「＋ 明細を追加する」から登録してください。", true); return; }
+  await loadFundIndex();
 
-  raw.forEach((r,i)=>{
-    const n = i+1;
-    if(!r.date && !r.amount && !r.code) return;
-    if(!r.date){ problems.push(`${n}行目: 約定日が未入力`); return; }
-    const amt = Number(r.amount);
-    if(!isFinite(amt) || amt<=0){ problems.push(`${n}行目: 金額が不正`); return; }
-    if(!/^[0-9A-Za-z]{8}$/.test(r.code)){ problems.push(`${n}行目: 協会コードは英数字8桁`); return; }
-    valid.push({...r, amount: amt});
-  });
-  if(problems.length){ setStatus(problems.join(" / "), true); warn.push(...problems); }
-  if(!valid.length){ if(!problems.length) setStatus("入力がありません。", true); return; }
-
-  const codes = [...new Set(valid.map(v=>v.code))];
-  const missing = [];
+  const warn = [], out = [], missing = [];
+  const codes = [...new Set(lots.map(l=>l.code))];
   for(const c of codes){
     try{ await getFund(c, m => setStatus(m)); }
-    catch(e){ warn.push(`${c}: ${e.message}`); missing.push(c); }
+    catch(e){ warn.push(e.message); missing.push(c); }
   }
-  refreshManualPanel();
-  if(missing.length && !fundCache.size){
-    setStatus("基準価額データを自動取得できませんでした。下の案内からCSVを読み込んでください。", true);
-    return;
-  }
+  renderLots();
 
-  for(const v of valid){
-    const f = fundCache.get(v.code);
+  for(const l of lots){
+    const f = fundCache.get(l.code);
     if(!f) continue;
     const last = f.rows.length-1;
-    const i = idxOnOrBefore(f.rows, v.date);
-    if(i < 0){ warn.push(`${v.code}: ${v.date} はデータ開始日（${f.rows[0].d}）より前のため除外しました`); continue; }
-    if(i === last){ warn.push(`${v.code}: ${v.date} が最新データ日以降のため計算できません`); continue; }
-    if(f.rows[i].d !== v.date) warn.push(`${v.code}: ${v.date} は非営業日のため直前営業日 ${f.rows[i].d} の基準価額を使用しました`);
+    const i = idxOnOrBefore(f.rows, l.date);
+    if(i < 0){ warn.push(`${l.code}: ${l.date} はデータ開始日（${f.rows[0].d}）より前のため除外しました`); continue; }
+    if(i === last){ warn.push(`${l.code}: ${l.date} が最新データ日以降のため計算できません`); continue; }
+    if(f.rows[i].d !== l.date) warn.push(`${l.code}: ${l.date} は非営業日のため直前営業日 ${f.rows[i].d} の基準価額を使用しました`);
 
     const factor = f.tr[last] / f.tr[i];
     const days = Math.round((new Date(f.rows[last].d) - new Date(f.rows[i].d)) / 86400000);
-    if(days < 30) warn.push(`${v.date} の買付は保有 ${days} 日と短いため、年率換算値は参考値です`);
-    lots.push({...v, fund:f, navAt:f.rows[i].nav, usedDate:f.rows[i].d,
-               value: v.amount*factor, factor, days, cagr: annualize(factor, days), asOf: f.rows[last].d});
+    if(days < 30) warn.push(`${l.date} の買付は保有 ${days} 日と短いため、年率換算値は参考値です`);
+    out.push({...l, fund:f, navAt:f.rows[i].nav, usedDate:f.rows[i].d,
+              value:l.amount*factor, days, cagr:annualize(factor, days), asOf:f.rows[last].d});
   }
 
-  if(!lots.length){ setStatus("計算できる明細がありませんでした。" + (warn[0]||""), true); return; }
-  if(!problems.length && !missing.length) setStatus("");
-  render(lots, warn);
+  if(!out.length){
+    $("results").classList.add("hidden");
+    setStatus(missing.length
+      ? "基準価額データを取得できませんでした。下の案内を確認してください。"
+      : "計算できる明細がありませんでした。" + (warn[0]||""), true);
+    return;
+  }
+  setStatus(missing.length ? `${missing.join("、")} のデータが未取得のため、その銘柄は除外して計算しました。` : "", missing.length>0);
+  render(out, warn);
 }
 
 /* ============================ 描画 ============================ */
-function render(lots, warn){
+function render(rows, warn){
   $("results").classList.remove("hidden");
-  const total = agg(lots);
+  const total = agg(rows);
 
   $("summaryCards").innerHTML = [
     ["投資元本", yen(total.cost), ""], ["評価額", yen(total.val), ""],
@@ -540,21 +689,21 @@ function render(lots, warn){
     ["年率リターン（CAGR）", pct(total.cagr), cls(total.cagr)]
   ].map(([l,v,c])=>`<div class="card"><div class="lbl">${l}</div><div class="big ${c}">${v}</div></div>`).join("");
 
-  const asOf = [...new Set(lots.map(l=>l.asOf))].sort().pop();
+  const asOf = [...new Set(rows.map(l=>l.asOf))].sort().pop();
   $("asOfNote").textContent = `評価基準日：${asOf}（各銘柄の最新基準価額）／ 分配金再投資ベース ／ 加重平均保有期間 ${days2y(total.wdays)}`;
 
   const byCode = {};
-  lots.forEach(l => (byCode[l.code] = byCode[l.code] || []).push(l));
+  rows.forEach(l => (byCode[l.code] = byCode[l.code] || []).push(l));
   $("byFund").innerHTML = Object.entries(byCode).map(([code, ls])=>{
-    const a = agg(ls), memo = ls.map(x=>x.name).find(Boolean);
-    return `<tr><td>${esc(memo || code)}${memo?`<br><span class="tag">${code}</span>`:""}</td>
+    const a = agg(ls), nm = ls.map(x=>x.name).find(Boolean) || fundName(code);
+    return `<tr><td>${esc(nm || code)}${nm?`<br><span class="tag">${esc(code)}</span>`:""}</td>
       <td class="num ${cls(a.cagr)}"><b>${pct(a.cagr)}</b></td><td class="num ${cls(a.cum)}">${pct(a.cum)}</td>
       <td class="num">${yen(a.cost)}</td><td class="num">${yen(a.val)}</td>
       <td class="num ${cls(a.pl)}">${yen(a.pl)}</td><td class="num">${days2y(a.wdays)}</td></tr>`;
   }).join("");
 
   const byAcct = {};
-  lots.forEach(l => (byAcct[l.acct] = byAcct[l.acct] || []).push(l));
+  rows.forEach(l => (byAcct[l.acct] = byAcct[l.acct] || []).push(l));
   $("byAcct").innerHTML = ACCOUNTS.filter(a=>byAcct[a]).map(a=>{
     const g = agg(byAcct[a]);
     return `<tr><td>${a}</td><td class="num ${cls(g.cagr)}"><b>${pct(g.cagr)}</b></td>
@@ -562,9 +711,9 @@ function render(lots, warn){
       <td class="num">${yen(g.val)}</td><td class="num ${cls(g.pl)}">${yen(g.pl)}</td></tr>`;
   }).join("");
 
-  $("byLot").innerHTML = lots.slice().sort((x,y)=> x.date<y.date?-1:1).map(l=>
-    `<tr><td>${l.usedDate}</td><td>${esc(l.name || l.code)}</td><td>${l.acct}</td>
-      <td class="num">${yen(l.amount)}</td><td class="num">${Math.round(l.navAt).toLocaleString("ja-JP")}</td>
+  $("byLot").innerHTML = rows.map(l=>
+    `<tr><td>${l.usedDate}</td><td>${esc(labelFor(l))}</td><td>${esc(l.acct)}</td>
+      <td class="num">${yen(l.amount)}</td><td class="num">${comma(l.navAt)}</td>
       <td class="num">${yen(l.value)}</td><td class="num ${cls(l.value-l.amount)}">${yen(l.value-l.amount)}</td>
       <td class="num">${l.days}</td><td class="num ${cls(l.cagr)}"><b>${pct(l.cagr)}</b></td></tr>`).join("");
 
@@ -575,33 +724,44 @@ function render(lots, warn){
   $("results").scrollIntoView({behavior:"smooth", block:"start"});
 }
 
-/* ============================ 手動読み込みパネル ============================ */
+/* ============================ 手動読み込み ============================ */
+/** GitHub Pages で開いているとき、リポジトリの編集URLを推測する */
+function repoUrls(){
+  const m = /^([\w-]+)\.github\.io$/.exec(location.hostname);
+  if(!m) return null;
+  const repo = (location.pathname.split("/").filter(Boolean)[0]) || (m[1] + ".github.io");
+  const base = `https://github.com/${m[1]}/${repo}`;
+  return {funds: `${base}/edit/main/data/funds.txt`,
+          action: `${base}/actions/workflows/update-nav.yml`};
+}
+
 function refreshManualPanel(){
   const panel = $("manualPanel");
-  if(SERVER_MODE && !autoFetchBroken){ panel.classList.add("hidden"); return; }
-
-  const codes = [...new Set(readRows().map(r=>r.code).filter(c=>/^[0-9A-Za-z]{8}$/.test(c)))];
+  const codes = [...new Set(lots.map(l=>l.code))];
   const pending = codes.filter(c=>!fundCache.has(c));
 
-  if(!autoFetchBroken && !fundCache.size && !codes.length){ panel.classList.add("hidden"); return; }
-  if(!pending.length && fundCache.size){
-    panel.classList.remove("hidden");
-    $("manualMsg").innerHTML = `<span style="color:var(--ok)">✓ 必要な銘柄のデータは読み込み済みです。</span>`;
-    $("csvLinks").innerHTML = "";
-  }else{
-    panel.classList.remove("hidden");
-    $("manualMsg").textContent = autoFetchBroken
-      ? "ブラウザのセキュリティ制限で基準価額を自動取得できませんでした。下のリンクから銘柄ごとのCSVをダウンロードし、「ダウンロードしたCSVを選ぶ」で読み込んでください。iPhoneの場合、リンクをタップすると「ファイル」アプリに保存されます。"
-      : "基準価額CSVを手動で読み込むこともできます。";
-    $("csvLinks").innerHTML = codes.length
-      ? codes.map(c=>`<a class="codelink" href="${CSV_URL(c)}" target="_blank" rel="noopener">${fundCache.has(c)?"✓":"⬇︎"} ${c} のCSVをダウンロード</a>`).join("")
-      : `<span style="color:var(--muted)">協会コードを入力するとダウンロードリンクが出ます。</span>`;
+  // 必要なデータが揃っていれば、この案内は出さない
+  if(!codes.length || !pending.length || !(fundCache.size || autoFetchBroken)){
+    panel.classList.add("hidden");
+    return;
   }
+
+  panel.classList.remove("hidden");
+  const u = repoUrls();
+  $("manualMsg").innerHTML =
+    "次の銘柄の基準価額データがまだありません。"
+    + (u ? `<br><b>おすすめ：</b><a href="${u.funds}" target="_blank" rel="noopener">data/funds.txt に協会コードを追加</a>`
+         + `して保存し、<a href="${u.action}" target="_blank" rel="noopener">「基準価額データの更新」を実行</a>`
+         + "すると、以降は自動で取得されます（数分かかります）。"
+       : "リポジトリの data/funds.txt に協会コードを追加し、「基準価額データの更新」を実行すると自動取得されます。")
+    + "<br>今すぐ計算したい場合は、下のリンクからCSVをダウンロードして読み込んでください。";
+  $("csvLinks").innerHTML = pending.map(c=>
+    `<a class="codelink" href="${CSV_URL(c)}" target="_blank" rel="noopener">⬇︎ ${esc(c)} のCSVをダウンロード</a>`).join("");
   $("loadedList").textContent = fundCache.size ? "読込済み: " + [...fundCache.keys()].join(", ") : "";
 }
 
 function assignCode(fileName){
-  const codes = [...new Set(readRows().map(r=>r.code).filter(c=>/^[0-9A-Za-z]{8}$/.test(c)))];
+  const codes = [...new Set(lots.map(l=>l.code))];
   const hit = (String(fileName).match(/[0-9A-Za-z]{8}/g)||[]).find(c=>codes.includes(c));
   return hit || codes.find(c=>!fundCache.has(c)) || null;
 }
@@ -610,43 +770,79 @@ function handleFiles(files){
     const reader = new FileReader();
     reader.onload = () => {
       const code = assignCode(file.name);
-      if(!code){ setStatus(`${file.name}: 対応する協会コードが見つかりません。先に協会コードを入力してください。`, true); return; }
-      try{ registerCsv(code, decodeCsv(reader.result)); setStatus(`${code} のデータを読み込みました。「リターンを計算」を押してください。`); }
-      catch(e){ setStatus(`${file.name}: ${e.message}`, true); }
-      refreshManualPanel();
+      if(!code){ setStatus(`${file.name}: 対応する協会コードが見つかりません。先に明細を登録してください。`, true); return; }
+      try{
+        register(code, parseCsvText(decodeCsv(reader.result)), "manual");
+        setStatus(`${code} のデータを読み込みました。「リターンを計算」を押してください。`);
+      }catch(e){ setStatus(`${file.name}: ${e.message}`, true); }
+      renderLots();
     };
     reader.readAsArrayBuffer(file);
   });
 }
 
 /* ============================ イベント ============================ */
-$("addRow").onclick   = () => { addRow(); save(); refreshManualPanel(); };
-$("calc").onclick     = () => calculate().catch(e=>setStatus(e.message, true));
-$("clearAll").onclick = () => { if(!confirm("入力をすべて消去します。よろしいですか？")) return;
-  $("lotBody").innerHTML=""; addRow(); save(); refreshManualPanel(); };
-$("pasteToggle").onclick = () => $("pasteArea").classList.toggle("hidden");
-$("pasteApply").onclick = () => {
-  let n=0;
-  $("pasteBox").value.split(/\r?\n/).forEach(line=>{
+$("mAcct").innerHTML = ACCOUNTS.map(a=>`<option>${a}</option>`).join("");
+$("addLot").onclick = () => openModal(null);
+$("mSave").onclick   = saveModal;
+$("mCancel").onclick = closeModal;
+$("mDelete").onclick = deleteLot;
+$("mAmt").addEventListener("input", e => amountFormat(e.target));
+$("mCode").addEventListener("input", e => {
+  e.target.value = e.target.value.replace(/[^0-9A-Za-z]/g,"").slice(0,8);
+  updateCodeHint();
+  const n = fundName(e.target.value.trim());
+  if(n && !$("mName").value) $("mName").value = n;
+});
+$("overlay").addEventListener("click", e => { if(e.target === $("overlay")) closeModal(); });
+document.addEventListener("keydown", e => {
+  if(e.key === "Escape" && $("overlay").classList.contains("open")) closeModal();
+  if(e.key === "Enter" && $("overlay").classList.contains("open") && e.target.tagName === "INPUT") saveModal();
+});
+
+$("calc").onclick = () => calculate().catch(e=>setStatus(e.message, true));
+$("clearAll").onclick = () => {
+  if(!confirm("明細をすべて消去します。よろしいですか？")) return;
+  lots = []; store(); renderLots(); $("results").classList.add("hidden"); setStatus("");
+};
+$("bulkToggle").onclick = () => $("bulkArea").classList.toggle("hidden");
+$("bulkApply").onclick = () => {
+  let n = 0;
+  $("bulkBox").value.split(/\r?\n/).forEach(line=>{
     if(!line.trim()) return;
     const c = line.split(/[,\t]/).map(s=>s.trim());
-    if(c.length<3) return;
+    if(c.length < 3) return;
     const m = /(\d{4})\D+(\d{1,2})\D+(\d{1,2})/.exec(c[0]); if(!m) return;
-    addRow({date:`${m[1]}-${String(+m[2]).padStart(2,"0")}-${String(+m[3]).padStart(2,"0")}`,
-            amount:c[1].replace(/[,，\s円]/g,""), code:c[2].replace(/\s/g,""),
-            acct:ACCOUNTS.find(a=>(c[3]||"").includes(a))||ACCOUNTS[0], name:c[4]||""});
+    const amount = Number(String(c[1]).replace(/[^\d]/g,"")); if(!(amount>0)) return;
+    const code = String(c[2]).replace(/[^0-9A-Za-z]/g,""); if(!/^[0-9A-Za-z]{8}$/.test(code)) return;
+    lots.push({id:newId(),
+      date:`${m[1]}-${String(+m[2]).padStart(2,"0")}-${String(+m[3]).padStart(2,"0")}`,
+      amount, code, acct: ACCOUNTS.find(a=>(c[3]||"").includes(a)) || ACCOUNTS[0], name: c[4]||""});
+    if(!(code in knownCodes)) knownCodes[code] = c[4] || "";
     n++;
   });
-  save(); refreshManualPanel();
-  setStatus(n?`${n}件を取り込みました。`:"取り込める行がありませんでした。", !n);
-  if(n) $("pasteBox").value = "";
+  store(); renderLots();
+  setStatus(n ? `${n}件を取り込みました。` : "取り込める行がありませんでした。", !n);
+  if(n){ $("bulkBox").value = ""; $("bulkArea").classList.add("hidden"); }
+};
+$("exportBtn").onclick = () => {
+  const lines = ["約定日,金額,協会コード,口座種別,銘柄名"]
+    .concat(lots.map(l=>[l.date,l.amount,l.code,l.acct,(l.name||"").replace(/,/g,"")].join(",")));
+  const blob = new Blob(["﻿"+lines.join("\n")], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "買付明細.csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
+  setStatus("明細をCSVで書き出しました。「まとめて入力」から戻せます。");
 };
 $("pasteCsvApply").onclick = () => {
-  const code = $("pasteCode").value.trim() || assignCode("");
-  if(!/^[0-9A-Za-z]{8}$/.test(code||"")){ setStatus("協会コード（8桁）を入力してください。", true); return; }
-  try{ registerCsv(code, $("pasteCsv").value); setStatus(`${code} のデータを読み込みました。`); $("pasteCsv").value=""; }
-  catch(e){ setStatus(e.message, true); }
-  refreshManualPanel();
+  const code = ($("pasteCode").value.trim() || assignCode("") || "").replace(/[^0-9A-Za-z]/g,"");
+  if(!/^[0-9A-Za-z]{8}$/.test(code)){ setStatus("協会コード（8桁）を入力してください。", true); return; }
+  try{
+    register(code, parseCsvText($("pasteCsv").value), "manual");
+    setStatus(`${code} のデータを読み込みました。`); $("pasteCsv").value = "";
+  }catch(e){ setStatus(e.message, true); }
+  renderLots();
 };
 
 const drop = $("drop");
@@ -654,27 +850,22 @@ const drop = $("drop");
 ["dragleave","drop"].forEach(ev => drop.addEventListener(ev, e=>{e.preventDefault();drop.classList.remove("over");}));
 drop.addEventListener("drop", e => handleFiles(e.dataTransfer.files));
 $("filePick").addEventListener("change", e => handleFiles(e.target.files));
-$("lotBody").addEventListener("change", refreshManualPanel);
 
-load();
-refreshManualPanel();
+/* ============================ 起動処理 ============================ */
+restore();
+renderLots();
+loadFundIndex().then(()=>renderLots());
 
-/* ============================ ホーム画面アプリ対応 ============================ */
-// Service Worker（オフライン起動用）
 if("serviceWorker" in navigator && window.isSecureContext){
   window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(()=>{}));
 }
-
-// iOS Safari でまだホーム画面に追加していない場合だけ案内を出す
 (function(){
   const standalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
   const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
               (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   let dismissed = false;
   try{ dismissed = localStorage.getItem("a2hs-dismissed") === "1"; }catch(e){}
-  if(iOS && !standalone && !dismissed && window.isSecureContext){
-    $("a2hs").style.display = "block";
-  }
+  if(iOS && !standalone && !dismissed && window.isSecureContext) $("a2hs").style.display = "block";
   $("a2hsClose").onclick = () => {
     $("a2hs").style.display = "none";
     try{ localStorage.setItem("a2hs-dismissed","1"); }catch(e){}
