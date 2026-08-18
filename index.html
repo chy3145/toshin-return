@@ -274,22 +274,16 @@
     </div>
 
     <div class="field">
-      <label for="mIsin">ISINコード（12桁・任意）</label>
-      <input type="text" id="mIsin" maxlength="12" autocomplete="off"
-             autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="JP90C000FCD3">
+      <label for="mName">銘柄名</label>
+      <input type="text" id="mName" autocomplete="off" placeholder="データ取得後に自動で入ります">
       <div class="hint">
-        データ取得に必要です。投信総合検索ライブラリーのファンド詳細ページで確認できます。
+        データを取得すると自動で入ります。分かりやすい名前に書き換えても構いません。
       </div>
     </div>
 
     <div class="field">
       <label for="mAcct">口座種別</label>
       <select id="mAcct"></select>
-    </div>
-
-    <div class="field">
-      <label for="mName">銘柄名（任意メモ）</label>
-      <input type="text" id="mName" autocomplete="off" placeholder="空欄可">
     </div>
 
     <div id="modalErr"></div>
@@ -308,13 +302,11 @@
 const ACCOUNTS  = ["積立", "成長投資", "特定"];
 const LOTS_KEY  = "toshin-return-lots-v2";
 const CODES_KEY = "toshin-return-codes-v1";
-const ISIN_KEY  = "toshin-return-isin-v1";
 const TAB_KEY   = "toshin-return-tab-v1";
 const $ = (id) => document.getElementById(id);
 
 let lots = [];          // {id, date, amount, code, acct, name}
 let knownCodes = {};    // 協会コード -> 銘柄名
-let knownIsins = {};    // 協会コード -> ISIN
 let fundIndex = null;   // data/index.json
 const fundCache = new Map();
 
@@ -325,14 +317,12 @@ function store(){
   try{
     localStorage.setItem(LOTS_KEY,  JSON.stringify(lots));
     localStorage.setItem(CODES_KEY, JSON.stringify(knownCodes));
-    localStorage.setItem(ISIN_KEY,  JSON.stringify(knownIsins));
   }catch(e){}
 }
 function restore(){
   const get = k => { try{ return JSON.parse(localStorage.getItem(k) || "null"); }catch(e){ return null; } };
   const a = get(LOTS_KEY);   if(Array.isArray(a)) lots = a.filter(l => l && l.date && l.code);
   const c = get(CODES_KEY);  if(c && typeof c === "object") knownCodes = c;
-  const i = get(ISIN_KEY);   if(i && typeof i === "object") knownIsins = i;
 }
 let idSeq = 0;
 function newId(){ let id; do{ id = "lot" + (++idSeq); } while(lots.some(l=>l.id===id)); return id; }
@@ -345,9 +335,6 @@ const cls = n => n>0 ? "plus" : n<0 ? "minus" : "";
 const esc = s => String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function fundName(code){
   return knownCodes[code] || (fundIndex && fundIndex[code] && fundIndex[code].name) || "";
-}
-function fundIsin(code){
-  return knownIsins[code] || (fundIndex && fundIndex[code] && fundIndex[code].isin) || "";
 }
 function setStatus(msg, isErr){
   [$("status"), $("status2")].forEach(el=>{
@@ -413,7 +400,6 @@ function openModal(id){
   $("mCode").value = l ? l.code : (lastLot ? lastLot.code : "");
   $("mAcct").value = l ? l.acct : (lastLot ? lastLot.acct : ACCOUNTS[0]);
   $("mName").value = l ? (l.name||"") : "";
-  $("mIsin").value = fundIsin($("mCode").value.trim());
   $("modalErr").textContent = "";
   updateCodeHint();
   $("overlay").classList.add("open");
@@ -435,22 +421,18 @@ function saveModal(){
   const date = $("mDate").value.trim();
   const amount = amountValue($("mAmt"));
   const code = $("mCode").value.trim().replace(/\s/g,"");
-  const isin = $("mIsin").value.trim().replace(/\s/g,"").toUpperCase();
   const acct = $("mAcct").value;
   const name = $("mName").value.trim();
 
   if(!date) return fail("約定日を入力してください。");
   if(!(amount > 0)) return fail("金額を入力してください。");
   if(!/^[0-9A-Za-z]{8}$/.test(code)) return fail("協会コードは英数字8桁で入力してください。");
-  if(isin && !/^[A-Z]{2}[0-9A-Z]{10}$/.test(isin))
-    return fail("ISINコードは「JP」で始まる12桁の英数字です。");
 
   if(editingId) Object.assign(lots.find(x=>x.id===editingId), {date, amount, code, acct, name});
   else lots.push({id:newId(), date, amount, code, acct, name});
 
   if(name) knownCodes[code] = name;
   else if(!(code in knownCodes)) knownCodes[code] = "";
-  if(isin) knownIsins[code] = isin;
 
   store(); renderLots(); closeModal(); calculate();
 }
@@ -698,31 +680,25 @@ function repoUrls(){
 function renderMissing(missing){
   if(!missing.length){ $("dataMissing").innerHTML = ""; return; }
   const u = repoUrls();
-  const items = missing.map(c=>{
-    const isin = fundIsin(c);
-    const val = c + (isin ? "," + isin : "");
-    return `<li><code>${esc(val)}</code>
-      <button class="ghost" data-copy="${esc(val)}" style="padding:3px 9px;margin-left:6px">コピー</button>
-      ${isin ? "" : '<br><span style="opacity:.85">ISINコードが未登録です。明細を開いて入力してください。</span>'}</li>`;
-  }).join("");
+  const val = missing.join(" ");
   $("dataMissing").innerHTML =
     `<div class="box warn"><b>基準価額データが未取得です</b><br>
       ${u ? `<a href="${u.action}" target="_blank" rel="noopener">GitHubの「基準価額データの更新」</a>を開き、`
           : "GitHubの「基準価額データの更新」を開き、"}
-      Run workflow の入力欄に次の値を貼り付けて実行してください。数分後に自動で反映されます。
-      <ul>${items}</ul></div>`;
-  $("dataMissing").querySelectorAll("[data-copy]").forEach(b=>{
-    b.onclick = async () => {
-      const t = b.getAttribute("data-copy");
-      try{ await navigator.clipboard.writeText(t); b.textContent = "コピー済"; }
-      catch(e){
-        const ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta);
-        ta.select(); try{ document.execCommand("copy"); b.textContent="コピー済"; }catch(_){}
-        ta.remove();
-      }
-      setTimeout(()=>b.textContent="コピー", 1600);
-    };
-  });
+      Run workflow の入力欄に協会コードを貼り付けて実行してください。数分後に自動で反映されます。
+      <div style="margin-top:8px"><code>${esc(val)}</code>
+        <button class="ghost" id="copyCodes" style="padding:3px 9px;margin-left:6px">コピー</button></div>
+    </div>`;
+  const btn = $("copyCodes");
+  btn.onclick = async () => {
+    try{ await navigator.clipboard.writeText(val); btn.textContent = "コピー済"; }
+    catch(e){
+      const ta=document.createElement("textarea"); ta.value=val; document.body.appendChild(ta);
+      ta.select(); try{ document.execCommand("copy"); btn.textContent="コピー済"; }catch(_){}
+      ta.remove();
+    }
+    setTimeout(()=>btn.textContent="コピー", 1600);
+  };
 }
 
 /* ============================ イベント ============================ */
@@ -741,10 +717,6 @@ $("mCode").addEventListener("input", e => {
   updateCodeHint();
   const c = e.target.value.trim();
   const n = fundName(c); if(n && !$("mName").value) $("mName").value = n;
-  const s = fundIsin(c); if(s && !$("mIsin").value) $("mIsin").value = s;
-});
-$("mIsin").addEventListener("input", e => {
-  e.target.value = e.target.value.replace(/[^0-9A-Za-z]/g,"").toUpperCase().slice(0,12);
 });
 $("overlay").addEventListener("click", e => { if(e.target === $("overlay")) closeModal(); });
 document.addEventListener("keydown", e => {
@@ -792,7 +764,7 @@ restore();
 renderLots();
 try{ showTab(localStorage.getItem(TAB_KEY) === "lots" ? "lots" : "return"); }
 catch(e){ showTab("return"); }
-// 明細が0件でも銘柄名・ISINの参照表は読み込んでおく（入力補助のため）
+// 明細が0件でも銘柄名の参照表は読み込んでおく（入力補助のため）
 loadFundIndex().then(renderLots);
 calculate();
 
