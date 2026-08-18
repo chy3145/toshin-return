@@ -92,15 +92,26 @@
   .hero{background:var(--panel);padding:16px 14px;text-align:center}
   .hero .lbl{font-size:12px;color:var(--muted);margin-bottom:3px}
   .hero .val{font-size:29px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1.15}
-  #fundReturns{list-style:none;margin:0;padding:0}
-  #fundReturns li{display:flex;align-items:center;gap:10px;padding:13px 4px;border-bottom:1px solid var(--line2)}
-  #fundReturns li:last-child{border-bottom:none}
+  #fundReturns,#acctReturns{list-style:none;margin:0;padding:0}
+  #fundReturns li,#acctReturns li{border-bottom:1px solid var(--line2)}
+  #fundReturns li:last-child,#acctReturns li:last-child{border-bottom:none}
+  .fr-head{display:flex;align-items:center;gap:10px;padding:13px 4px}
+  #fundReturns .fr-head{cursor:pointer}
+  #fundReturns li.open .fr-head{background:var(--accent-soft);border-radius:8px}
   .fr-name{flex:1;min-width:0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .fr-code{font-size:11.5px;color:var(--muted);font-weight:400}
   .fr-val{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
   .fr-cagr{font-size:19px;font-weight:700;line-height:1.2}
   .fr-cum{font-size:12px;color:var(--muted)}
   .fr-cum b{font-weight:600}
+  .fr-chev{color:var(--muted);font-size:15px;line-height:1;transition:transform .15s;flex:0 0 12px;text-align:center}
+  #fundReturns li.open .fr-chev{transform:rotate(90deg)}
+  .fr-detail{padding:2px 4px 12px 14px;border-left:2px solid var(--accent-soft);margin:0 4px 8px 8px}
+  .fr-sub{display:flex;align-items:baseline;gap:10px;padding:7px 0;font-size:13.5px}
+  .fr-sub-name{flex:1;color:var(--muted)}
+  .fr-sub-val{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .fr-sub-val b{font-size:15px}
+  .fr-sub-cum{font-size:11.5px;color:var(--muted);margin-left:8px}
   .empty{color:var(--muted);font-size:13.5px;text-align:center;padding:24px 8px}
 
   /* ---------- 明細リスト ---------- */
@@ -175,19 +186,22 @@
     </div>
 
     <div class="panel">
-      <h2>銘柄別</h2>
+      <h2>銘柄別　<span style="font-weight:400;letter-spacing:0">（タップで口座種別の内訳）</span></h2>
       <ul id="fundReturns"></ul>
       <div id="returnEmpty" class="empty">
         「買付明細」タブで明細を登録すると、ここにリターンが表示されます。
       </div>
       <div class="row-actions">
         <button id="calc" class="primary">再計算</button>
-        <span class="spacer"></span>
-        <button id="goLots" class="ghost">買付明細を開く</button>
       </div>
       <div id="status" class="status"></div>
       <div id="dataMissing"></div>
       <div id="warnings"></div>
+    </div>
+
+    <div class="panel" id="acctReturnPanel">
+      <h2>口座種別</h2>
+      <ul id="acctReturns"></ul>
     </div>
 
     <details>
@@ -309,6 +323,7 @@ let lots = [];          // {id, date, amount, code, acct, name}
 let knownCodes = {};    // 協会コード -> 銘柄名
 let fundIndex = null;   // data/index.json
 const fundCache = new Map();
+const openFunds = new Set();   // 銘柄別で展開中の協会コード
 
 const SERVER_MODE = /^https?:$/.test(location.protocol) && /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 
@@ -578,6 +593,8 @@ async function runCalc(){
     $("heroCum").className = $("heroCagr").className = "val";
     $("asOfNote").textContent = "";
     $("byAcct").innerHTML = $("byLot").innerHTML = "";
+    $("acctReturns").innerHTML = "";
+    $("acctReturnPanel").classList.add("hidden");
     setStatus("");
     return;
   }
@@ -612,6 +629,8 @@ async function runCalc(){
     $("heroCum").textContent = $("heroCagr").textContent = "—";
     $("asOfNote").textContent = "";
     $("byAcct").innerHTML = $("byLot").innerHTML = "";
+    $("acctReturns").innerHTML = "";
+    $("acctReturnPanel").classList.add("hidden");
     setStatus(missing.length ? "" : "計算できる明細がありませんでした。", !missing.length);
     renderWarn(warn);
     return;
@@ -631,21 +650,60 @@ function render(rows, warn){
   const asOf = [...new Set(rows.map(l=>l.asOf))].sort().pop();
   $("asOfNote").textContent = `評価基準日：${asOf}　／　分配金再投資ベース`;
 
-  // 銘柄別（リターンのみ）
+  // 銘柄別（リターンのみ・タップで口座種別に展開）
   const byCode = {};
   rows.forEach(l => (byCode[l.code] = byCode[l.code] || []).push(l));
   const entries = Object.entries(byCode)
-    .map(([code, ls]) => ({code, a: agg(ls), nm: ls.map(x=>x.name).find(Boolean) || fundName(code)}))
+    .map(([code, ls]) => {
+      const sub = {};
+      ls.forEach(l => (sub[l.acct] = sub[l.acct] || []).push(l));
+      return {code, a: agg(ls), nm: ls.map(x=>x.name).find(Boolean) || fundName(code),
+              sub: ACCOUNTS.filter(x=>sub[x]).map(x=>({acct:x, a:agg(sub[x])}))};
+    })
     .sort((x,y) => (y.a.cagr||-9) - (x.a.cagr||-9));
+
+  const subRows = list => list.map(s=>`
+    <div class="fr-sub">
+      <span class="fr-sub-name">${esc(s.acct)}</span>
+      <span class="fr-sub-val"><b class="${cls(s.a.cagr)}">${pct(s.a.cagr)}</b>
+        <span class="fr-sub-cum">累積 ${pct(s.a.cum)}</span></span>
+    </div>`).join("");
+
   $("fundReturns").innerHTML = entries.map(e=>`
-    <li>
-      <div class="fr-name">${esc(e.nm || e.code)}<div class="fr-code">${esc(e.code)}</div></div>
-      <div class="fr-val">
-        <div class="fr-cagr ${cls(e.a.cagr)}">${pct(e.a.cagr)}</div>
-        <div class="fr-cum">累積 <b class="${cls(e.a.cum)}">${pct(e.a.cum)}</b></div>
+    <li data-code="${esc(e.code)}"${openFunds.has(e.code)?' class="open"':""}>
+      <div class="fr-head">
+        <div class="fr-name">${esc(e.nm || e.code)}<div class="fr-code">${esc(e.code)}</div></div>
+        <div class="fr-val">
+          <div class="fr-cagr ${cls(e.a.cagr)}">${pct(e.a.cagr)}</div>
+          <div class="fr-cum">累積 <b class="${cls(e.a.cum)}">${pct(e.a.cum)}</b></div>
+        </div>
+        <div class="fr-chev">${e.sub.length > 1 ? "›" : ""}</div>
       </div>
+      <div class="fr-detail${openFunds.has(e.code) ? "" : " hidden"}">${subRows(e.sub)}</div>
     </li>`).join("");
+  [...$("fundReturns").children].forEach(li=>{
+    li.querySelector(".fr-head").onclick = () => {
+      const code = li.dataset.code;
+      const open = li.classList.toggle("open");
+      li.querySelector(".fr-detail").classList.toggle("hidden", !open);
+      if(open) openFunds.add(code); else openFunds.delete(code);
+    };
+  });
   $("returnEmpty").classList.add("hidden");
+
+  // 口座種別（リターンのみ）
+  const acctAll = {};
+  rows.forEach(l => (acctAll[l.acct] = acctAll[l.acct] || []).push(l));
+  $("acctReturns").innerHTML = ACCOUNTS.filter(a=>acctAll[a]).map(a=>{
+    const g = agg(acctAll[a]);
+    return `<li><div class="fr-head">
+      <div class="fr-name">${esc(a)}</div>
+      <div class="fr-val">
+        <div class="fr-cagr ${cls(g.cagr)}">${pct(g.cagr)}</div>
+        <div class="fr-cum">累積 <b class="${cls(g.cum)}">${pct(g.cum)}</b></div>
+      </div></div></li>`;
+  }).join("");
+  $("acctReturnPanel").classList.remove("hidden");
 
   // 口座種別・買付ごと（明細タブ）
   const byAcct = {};
@@ -705,7 +763,6 @@ function renderMissing(missing){
 $("mAcct").innerHTML = ACCOUNTS.map(a=>`<option>${a}</option>`).join("");
 $("tabReturn").onclick = () => showTab("return");
 $("tabLots").onclick   = () => showTab("lots");
-$("goLots").onclick    = () => showTab("lots");
 $("addLot").onclick = () => openModal(null);
 $("mSave").onclick   = saveModal;
 $("mCancel").onclick = closeModal;
