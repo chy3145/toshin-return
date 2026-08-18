@@ -39,7 +39,10 @@
     background:var(--bg); color:var(--ink); font-size:15px; line-height:1.6;
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
   }
-  @media all and (display-mode:standalone){ body{padding-top:calc(18px + env(safe-area-inset-top))} }
+  @media all and (display-mode:standalone){
+    body{padding-top:calc(18px + env(safe-area-inset-top))}
+    .lot-bar{top:env(safe-area-inset-top,0px)}
+  }
   .wrap{max-width:1000px;margin:0 auto}
   h1{font-size:18px;margin:0 0 14px;letter-spacing:.02em}
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
@@ -124,9 +127,14 @@
   .li-sub{font-size:12px;color:var(--muted);margin-top:1px}
   .li-amt{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
   .li-chev{color:var(--muted);font-size:17px;line-height:1}
-  .totalline{display:flex;justify-content:space-between;padding:12px 4px 0;margin-top:4px;
-    border-top:2px solid var(--line);font-size:13.5px;color:var(--muted)}
-  .totalline b{color:var(--ink);font-variant-numeric:tabular-nums}
+  /* 明細タブ上部の固定バー（明細が増えてもボタンが隠れない） */
+  .lot-bar{position:sticky;top:0;z-index:6;
+    display:flex;align-items:center;gap:12px;background:var(--panel);
+    border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:14px;
+    box-shadow:0 3px 12px var(--shadow)}
+  .lot-bar button{flex:0 0 auto}
+  .lot-sum{flex:1;min-width:0;text-align:right;font-size:12.5px;color:var(--muted);line-height:1.35}
+  .lot-sum b{display:block;color:var(--ink);font-size:14px;font-variant-numeric:tabular-nums}
 
   /* ---------- モーダル ---------- */
   #overlay{position:fixed;inset:0;background:rgba(16,20,28,.45);display:none;z-index:50;
@@ -253,14 +261,15 @@
 
   <!-- ==================== タブ2：買付明細 ==================== -->
   <section id="paneLots" class="hidden">
+    <div class="lot-bar">
+      <button id="addLot" class="primary">＋ 明細を追加する</button>
+      <span class="lot-sum" id="lotSummary"></span>
+    </div>
+
     <div class="panel">
-      <h2>買付明細</h2>
       <ul id="lotList"></ul>
       <div id="lotEmpty" class="empty">まだ明細がありません。<br>「＋ 明細を追加する」から登録してください。</div>
-      <div id="lotTotal" class="totalline hidden"><span>投資元本 合計</span><b id="lotTotalVal">0 円</b></div>
       <div class="row-actions">
-        <button id="addLot" class="primary">＋ 明細を追加する</button>
-        <span class="spacer"></span>
         <button id="bulkToggle" class="ghost">まとめて入力</button>
         <button id="exportBtn" class="ghost">バックアップ</button>
         <button id="clearAll" class="ghost">全消去</button>
@@ -436,8 +445,8 @@ function renderLots(){
   [...ul.children].forEach(li => li.onclick = () => openModal(li.dataset.id));
 
   $("lotEmpty").classList.toggle("hidden", lots.length > 0);
-  $("lotTotal").classList.toggle("hidden", lots.length === 0);
-  $("lotTotalVal").textContent = yen(lots.reduce((s,l)=>s+l.amount,0));
+  $("lotSummary").innerHTML = lots.length
+    ? `${lots.length}件<b>${yen(lots.reduce((s,l)=>s+l.amount,0))}</b>` : "";
 
 }
 
