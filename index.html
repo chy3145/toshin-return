@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>投資信託リターン計算ツール</title>
 
-<!-- ホーム画面アプリとして動かすための設定 -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -13,7 +12,7 @@
 <meta name="application-name" content="投信リターン">
 <meta name="theme-color" content="#1f5fa8" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#14171c" media="(prefers-color-scheme: dark)">
-<meta name="description" content="約定日・金額・協会コードから投資信託の年率リターン（CAGR・分配金再投資ベース）を計算します。">
+<meta name="description" content="投資信託の年率リターン（CAGR・分配金再投資ベース）を計算します。">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
@@ -23,78 +22,90 @@
     --bg:#f5f6f8; --panel:#ffffff; --line:#e2e5ea; --line2:#eef0f4;
     --ink:#1a1d23; --muted:#6b7280; --accent:#1f5fa8; --accent-soft:#eaf1fa;
     --plus:#0a7c4a; --minus:#b3261e; --warn:#8a5a00; --warn-bg:#fdf6e3; --warn-bd:rgba(138,90,0,.25);
-    --ok:#0a7c4a; --ok-bg:#eaf7f0; --ok-bd:rgba(10,124,74,.25); --shadow:rgba(16,24,40,.18);
+    --shadow:rgba(16,24,40,.18);
   }
   @media (prefers-color-scheme: dark){
     :root{
       --bg:#14171c; --panel:#1c2027; --line:#2c323b; --line2:#242932;
       --ink:#e8eaee; --muted:#9aa3b0; --accent:#7fb3ec; --accent-soft:#1e2833;
       --plus:#4ecf90; --minus:#ff8a80; --warn:#e0b45f; --warn-bg:#2a2416; --warn-bd:rgba(224,180,95,.25);
-      --ok:#4ecf90; --ok-bg:#16261e; --ok-bd:rgba(78,207,144,.25); --shadow:rgba(0,0,0,.5);
+      --shadow:rgba(0,0,0,.5);
     }
   }
   *{box-sizing:border-box}
   html{-webkit-text-size-adjust:100%}
   body{
-    margin:0; padding:24px 16px calc(60px + env(safe-area-inset-bottom));
+    margin:0; padding:22px 16px calc(60px + env(safe-area-inset-bottom));
     background:var(--bg); color:var(--ink); font-size:15px; line-height:1.6;
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
   }
-  @media all and (display-mode:standalone){ body{padding-top:calc(20px + env(safe-area-inset-top))} }
-  .wrap{max-width:1080px;margin:0 auto}
-  h1{font-size:19px;margin:0 0 4px;letter-spacing:.02em}
-  .sub{color:var(--muted);font-size:12.5px;margin:0 0 20px}
-  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px}
+  @media all and (display-mode:standalone){ body{padding-top:calc(18px + env(safe-area-inset-top))} }
+  .wrap{max-width:1000px;margin:0 auto}
+  h1{font-size:18px;margin:0 0 14px;letter-spacing:.02em}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
   .panel h2{font-size:13px;margin:0 0 14px;letter-spacing:.04em;color:var(--muted);font-weight:600}
   table{width:100%;border-collapse:collapse}
-  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line2);vertical-align:middle}
+  th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--line2);vertical-align:middle}
   th{font-size:11.5px;color:var(--muted);font-weight:600;white-space:nowrap}
   td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
-  input,select,textarea{
-    font:inherit;font-size:16px;color:var(--ink);background:var(--panel);
-    border:1px solid var(--line);border-radius:8px;padding:10px 11px;width:100%;-webkit-appearance:none;appearance:none;
-  }
+  input,select{font:inherit;font-size:16px;color:var(--ink);background:var(--panel);
+    border:1px solid var(--line);border-radius:8px;padding:10px 11px;width:100%;-webkit-appearance:none;appearance:none}
   select{background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
     background-position:calc(100% - 15px) 54%,calc(100% - 10px) 54%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:28px}
   input:focus,select:focus,textarea:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
   input.num{text-align:right;font-variant-numeric:tabular-nums}
+  textarea{font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);
+    border-radius:8px;padding:10px;width:100%;min-height:96px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;margin-top:8px}
   button{font:inherit;font-size:15px;font-weight:600;cursor:pointer;border-radius:9px;padding:11px 16px;
     border:1px solid var(--line);background:var(--panel);color:var(--ink);-webkit-appearance:none}
   button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
   button.ghost{padding:9px 12px;font-weight:400;color:var(--muted);font-size:13.5px}
-  button.danger{color:var(--minus);border-color:var(--line)}
+  button.danger{color:var(--minus)}
   button:disabled{opacity:.55}
   .row-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:14px}
   .spacer{flex:1}
   .plus{color:var(--plus)} .minus{color:var(--minus)}
-  .big{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
-  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
-  .card{background:var(--panel);padding:12px 14px}
-  .card .lbl{font-size:11.5px;color:var(--muted);margin-bottom:2px}
+  .hidden{display:none !important}
   .note{font-size:12px;color:var(--muted);margin-top:12px}
+  .status{font-size:13px;color:var(--muted);min-height:20px;margin-top:10px}
   .box{border-radius:9px;padding:11px 13px;font-size:12.5px;margin-top:12px}
   .box.warn{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn-bd)}
-  .box.ok{background:var(--ok-bg);color:var(--ok);border:1px solid var(--ok-bd)}
   .box ul{margin:6px 0 0 18px;padding:0}
-  .hidden{display:none !important}
-  .status{font-size:13px;color:var(--muted);min-height:20px;margin-top:10px}
-  details{margin-top:12px;font-size:12.5px}
-  details summary{cursor:pointer;color:var(--muted);padding:4px 0}
-  textarea{min-height:96px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;margin-top:8px}
-  .drop{border:1.5px dashed var(--line);border-radius:10px;padding:18px 12px;text-align:center;color:var(--muted);font-size:13px;margin-top:10px}
-  .drop.over{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
   .tag{display:inline-block;font-size:11px;padding:1px 8px;border-radius:20px;background:var(--accent-soft);color:var(--accent)}
   .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
-  .codelink{display:block;padding:7px 0;border-bottom:1px solid var(--line2)}
-  .codelink:last-child{border-bottom:none}
-  #a2hs{display:none;background:var(--accent-soft);border:1px solid var(--accent);border-radius:12px;
-    padding:12px 32px 12px 14px;margin-bottom:16px;font-size:13.5px;position:relative}
-  #a2hs b{color:var(--accent)}
-  #a2hsClose{position:absolute;top:4px;right:6px;background:none;border:none;color:var(--muted);font-size:19px;padding:2px 6px}
+  details{margin-top:12px;font-size:12.5px}
+  details summary{cursor:pointer;color:var(--muted);padding:4px 0}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em}
+
+  /* ---------- タブ ---------- */
+  .tabs{display:flex;gap:4px;background:var(--line2);border:1px solid var(--line);
+    border-radius:11px;padding:4px;margin-bottom:16px}
+  .tabs button{flex:1;border:none;background:transparent;color:var(--muted);
+    padding:9px 8px;border-radius:8px;font-size:14.5px}
+  .tabs button[aria-selected="true"]{background:var(--panel);color:var(--ink);
+    box-shadow:0 1px 3px var(--shadow)}
+
+  /* ---------- リターン表示 ---------- */
+  .heroes{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);
+    border:1px solid var(--line);border-radius:11px;overflow:hidden}
+  .hero{background:var(--panel);padding:16px 14px;text-align:center}
+  .hero .lbl{font-size:12px;color:var(--muted);margin-bottom:3px}
+  .hero .val{font-size:29px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1.15}
+  #fundReturns{list-style:none;margin:0;padding:0}
+  #fundReturns li{display:flex;align-items:center;gap:10px;padding:13px 4px;border-bottom:1px solid var(--line2)}
+  #fundReturns li:last-child{border-bottom:none}
+  .fr-name{flex:1;min-width:0;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .fr-code{font-size:11.5px;color:var(--muted);font-weight:400}
+  .fr-val{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .fr-cagr{font-size:19px;font-weight:700;line-height:1.2}
+  .fr-cum{font-size:12px;color:var(--muted)}
+  .fr-cum b{font-weight:600}
+  .empty{color:var(--muted);font-size:13.5px;text-align:center;padding:24px 8px}
 
   /* ---------- 明細リスト ---------- */
   #lotList{list-style:none;margin:0;padding:0}
-  #lotList li{display:flex;align-items:center;gap:12px;padding:12px 6px;border-bottom:1px solid var(--line2);cursor:pointer}
+  #lotList li{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--line2);cursor:pointer}
   #lotList li:last-child{border-bottom:none}
   #lotList li:active{background:var(--accent-soft)}
   .li-main{flex:1;min-width:0}
@@ -102,14 +113,13 @@
   .li-sub{font-size:12px;color:var(--muted);margin-top:1px}
   .li-amt{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
   .li-chev{color:var(--muted);font-size:17px;line-height:1}
-  .empty{color:var(--muted);font-size:13.5px;text-align:center;padding:22px 8px}
-  .totalline{display:flex;justify-content:space-between;padding:12px 6px 0;margin-top:4px;
+  .totalline{display:flex;justify-content:space-between;padding:12px 4px 0;margin-top:4px;
     border-top:2px solid var(--line);font-size:13.5px;color:var(--muted)}
   .totalline b{color:var(--ink);font-variant-numeric:tabular-nums}
 
   /* ---------- モーダル ---------- */
   #overlay{position:fixed;inset:0;background:rgba(16,20,28,.45);display:none;z-index:50;
-    align-items:flex-end;justify-content:center;padding:0}
+    align-items:flex-end;justify-content:center}
   #overlay.open{display:flex}
   #modal{background:var(--panel);width:100%;max-width:460px;border-radius:16px 16px 0 0;
     padding:18px 18px calc(18px + env(safe-area-inset-bottom));box-shadow:0 -8px 32px var(--shadow);
@@ -121,19 +131,19 @@
   .modal-actions{display:flex;gap:8px;margin-top:18px;align-items:center}
   .modal-actions .primary{flex:1}
   #modalErr{color:var(--minus);font-size:12.5px;min-height:18px;margin-top:6px}
-  @media (min-width:560px){
-    #overlay{align-items:center;padding:20px}
-    #modal{border-radius:16px;padding-bottom:18px}
-  }
+  @media (min-width:560px){ #overlay{align-items:center;padding:20px} #modal{border-radius:16px;padding-bottom:18px} }
+
+  #a2hs{display:none;background:var(--accent-soft);border:1px solid var(--accent);border-radius:12px;
+    padding:12px 32px 12px 14px;margin-bottom:14px;font-size:13.5px;position:relative}
+  #a2hs b{color:var(--accent)}
+  #a2hsClose{position:absolute;top:4px;right:6px;background:none;border:none;color:var(--muted);font-size:19px;padding:2px 6px}
 
   @media (max-width:700px){
     body{padding:16px 12px 50px}
-    .big{font-size:19px}
     th,td{font-size:12.5px}
-    .scroll table{min-width:600px}
+    .scroll table{min-width:560px}
     .scroll{margin:0 -16px;padding:0 16px}
-    .cards{grid-template-columns:1fr 1fr}
-    .cards .card:last-child{grid-column:1 / -1}
+    .hero .val{font-size:25px}
   }
 </style>
 </head>
@@ -144,97 +154,39 @@
     <button id="a2hsClose" aria-label="閉じる">×</button>
     <b>ホーム画面に追加できます</b><br>
     Safari下部の <b>共有ボタン（□に↑）</b> → <b>「ホーム画面に追加」</b> で、アプリのように開けます。
-    追加後はオフラインでも起動します。
   </div>
 
-  <h1>投資信託リターン計算ツール</h1>
-  <p class="sub">
-    約定日・金額・協会コード・口座種別を登録すると、投資信託協会の基準価額をもとに、
-    銘柄ごとの年率換算リターン（CAGR・分配金再投資ベース）を計算します。
-  </p>
+  <h1>投資信託リターン</h1>
 
-  <!-- ================= 明細 ================= -->
-  <div class="panel">
-    <h2>買付明細</h2>
-    <ul id="lotList"></ul>
-    <div id="lotEmpty" class="empty">まだ明細がありません。<br>「＋ 明細を追加する」から登録してください。</div>
-    <div id="lotTotal" class="totalline hidden"><span>投資元本 合計</span><b id="lotTotalVal">0 円</b></div>
-
-    <div class="row-actions">
-      <button id="addLot">＋ 明細を追加する</button>
-      <span class="spacer"></span>
-      <button id="calc" class="primary">リターンを計算</button>
-    </div>
-    <div class="row-actions" style="margin-top:8px">
-      <button id="bulkToggle" class="ghost">まとめて入力</button>
-      <button id="exportBtn" class="ghost">バックアップ</button>
-      <button id="clearAll" class="ghost">全消去</button>
-    </div>
-
-    <div id="bulkArea" class="hidden">
-      <textarea id="bulkBox" placeholder="1行1件（カンマ or タブ区切り）&#10;約定日, 金額, 協会コード, 口座種別&#10;2024-01-15, 50000, 04318178, 積立"></textarea>
-      <div class="row-actions"><button id="bulkApply">この内容を取り込む</button></div>
-    </div>
-
-    <div id="status" class="status"></div>
+  <div class="tabs" role="tablist">
+    <button id="tabReturn" role="tab" aria-selected="true">リターン</button>
+    <button id="tabLots"   role="tab" aria-selected="false">買付明細</button>
   </div>
 
-  <!-- ============ 基準価額データの手動読み込み ============ -->
-  <div class="panel hidden" id="manualPanel">
-    <h2>基準価額データの読み込み</h2>
-    <p style="margin:0;font-size:13px;color:var(--muted)" id="manualMsg"></p>
-    <div id="csvLinks" style="margin-top:10px;font-size:13.5px"></div>
-    <div class="drop" id="drop">
-      <label style="color:var(--accent);text-decoration:underline;cursor:pointer;font-weight:600">
-        ダウンロードしたCSVを選ぶ<input type="file" id="filePick" accept=".csv,text/csv,text/comma-separated-values" multiple class="hidden">
-      </label>
-      <div style="margin-top:6px;font-size:12px">（パソコンならドラッグ＆ドロップも可）</div>
-    </div>
-    <details>
-      <summary>CSVの中身をコピー＆ペーストで貼る</summary>
-      <div style="display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:8px">
-        <input type="text" id="pasteCode" placeholder="協会コード（8桁）" maxlength="8">
-        <button id="pasteCsvApply">取り込む</button>
-      </div>
-      <textarea id="pasteCsv" placeholder="年月日,基準価額(円),純資産総額（百万円）,分配金,決算期&#10;2024年01月15日,14679,12345,0,"></textarea>
-    </details>
-    <div id="loadedList" style="margin-top:10px;font-size:12.5px;color:var(--muted)"></div>
-  </div>
-
-  <!-- ================= 結果 ================= -->
-  <div id="results" class="hidden">
+  <!-- ==================== タブ1：リターン ==================== -->
+  <section id="paneReturn">
     <div class="panel">
-      <h2>全体サマリー</h2>
-      <div class="cards" id="summaryCards"></div>
+      <h2>全体</h2>
+      <div class="heroes">
+        <div class="hero"><div class="lbl">累積リターン</div><div class="val" id="heroCum">—</div></div>
+        <div class="hero"><div class="lbl">年率リターン</div><div class="val" id="heroCagr">—</div></div>
+      </div>
       <div class="note" id="asOfNote"></div>
     </div>
 
     <div class="panel">
       <h2>銘柄別</h2>
-      <div class="scroll"><table>
-        <thead><tr><th>銘柄</th><th class="num">年率<br>リターン</th><th class="num">累積<br>リターン</th>
-          <th class="num">投資元本</th><th class="num">評価額</th><th class="num">損益</th>
-          <th class="num">加重平均<br>保有期間</th></tr></thead>
-        <tbody id="byFund"></tbody>
-      </table></div>
-    </div>
-
-    <div class="panel">
-      <h2>口座種別</h2>
-      <div class="scroll"><table>
-        <thead><tr><th>口座種別</th><th class="num">年率<br>リターン</th><th class="num">累積<br>リターン</th>
-          <th class="num">投資元本</th><th class="num">評価額</th><th class="num">損益</th></tr></thead>
-        <tbody id="byAcct"></tbody>
-      </table></div>
-    </div>
-
-    <div class="panel">
-      <h2>買付ごとの内訳</h2>
-      <div class="scroll"><table>
-        <thead><tr><th>約定日</th><th>銘柄</th><th>口座</th><th class="num">金額</th><th class="num">約定日<br>基準価額</th>
-          <th class="num">評価額</th><th class="num">損益</th><th class="num">保有<br>日数</th><th class="num">年率<br>リターン</th></tr></thead>
-        <tbody id="byLot"></tbody>
-      </table></div>
+      <ul id="fundReturns"></ul>
+      <div id="returnEmpty" class="empty">
+        「買付明細」タブで明細を登録すると、ここにリターンが表示されます。
+      </div>
+      <div class="row-actions">
+        <button id="calc" class="primary">再計算</button>
+        <span class="spacer"></span>
+        <button id="goLots" class="ghost">買付明細を開く</button>
+      </div>
+      <div id="status" class="status"></div>
+      <div id="dataMissing"></div>
       <div id="warnings"></div>
     </div>
 
@@ -244,21 +196,61 @@
         <p style="margin:0 0 8px"><b>分配金再投資</b>：基準価額と分配金から日次の再投資指数
           <code>TR(t) = TR(t-1) × (基準価額(t) + 分配金(t)) ÷ 基準価額(t-1)</code> を作り、
           約定日から評価日までの倍率 <code>TR(評価日) ÷ TR(約定日)</code> を各買付に適用します。</p>
-        <p style="margin:0 0 8px"><b>年率換算（CAGR）</b>：買付ごとに <code>倍率^(365 ÷ 保有日数) − 1</code>。
-          銘柄・口座・全体は、金額を合算した累積リターンを、金額加重の平均保有期間
+        <p style="margin:0 0 8px"><b>年率リターン（CAGR）</b>：買付ごとに <code>倍率^(365 ÷ 保有日数) − 1</code>。
+          銘柄別・全体は、金額を合算した累積リターンを、金額加重の平均保有期間
           <code>Σ(金額×保有日数) ÷ Σ金額</code> で年率換算します。</p>
-        <p style="margin:0"><b>注意</b>：基準価額ベースのため信託報酬は反映済みですが、購入時手数料・税金・
-          ポイント還元は含みません。保有期間が短い買付の年率換算値は振れが大きくなります。</p>
+        <p style="margin:0"><b>注意</b>：信託報酬は反映済みですが、購入時手数料・税金・ポイント還元は含みません。
+          保有期間が短い買付の年率換算値は振れが大きくなります。</p>
       </div>
     </details>
-  </div>
+  </section>
+
+  <!-- ==================== タブ2：買付明細 ==================== -->
+  <section id="paneLots" class="hidden">
+    <div class="panel">
+      <h2>買付明細</h2>
+      <ul id="lotList"></ul>
+      <div id="lotEmpty" class="empty">まだ明細がありません。<br>「＋ 明細を追加する」から登録してください。</div>
+      <div id="lotTotal" class="totalline hidden"><span>投資元本 合計</span><b id="lotTotalVal">0 円</b></div>
+      <div class="row-actions">
+        <button id="addLot" class="primary">＋ 明細を追加する</button>
+        <span class="spacer"></span>
+        <button id="bulkToggle" class="ghost">まとめて入力</button>
+        <button id="exportBtn" class="ghost">バックアップ</button>
+        <button id="clearAll" class="ghost">全消去</button>
+      </div>
+      <div id="bulkArea" class="hidden">
+        <textarea id="bulkBox" placeholder="1行1件（カンマ or タブ区切り）&#10;約定日, 金額, 協会コード, 口座種別&#10;2024-01-15, 50000, 04318178, 積立"></textarea>
+        <div class="row-actions"><button id="bulkApply">この内容を取り込む</button></div>
+      </div>
+      <div id="status2" class="status"></div>
+    </div>
+
+    <div class="panel" id="acctPanel">
+      <h2>口座種別</h2>
+      <div class="scroll"><table>
+        <thead><tr><th>口座種別</th><th class="num">年率<br>リターン</th><th class="num">累積<br>リターン</th>
+          <th class="num">投資元本</th><th class="num">評価額</th><th class="num">損益</th></tr></thead>
+        <tbody id="byAcct"></tbody>
+      </table></div>
+    </div>
+
+    <div class="panel" id="detailPanel">
+      <h2>買付ごとの内訳</h2>
+      <div class="scroll"><table>
+        <thead><tr><th>約定日</th><th>銘柄</th><th>口座</th><th class="num">金額</th><th class="num">約定日<br>基準価額</th>
+          <th class="num">評価額</th><th class="num">損益</th><th class="num">保有<br>日数</th><th class="num">年率<br>リターン</th></tr></thead>
+        <tbody id="byLot"></tbody>
+      </table></div>
+    </div>
+  </section>
 
   <p class="note">
     データ出所：投資信託協会 投信総合検索ライブラリー（基準価額・分配金）。計算結果は概算であり、投資判断の根拠としての正確性を保証するものではありません。
   </p>
 </div>
 
-<!-- ================= 入力モーダル ================= -->
+<!-- ==================== 入力モーダル ==================== -->
 <div id="overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
   <div id="modal">
     <h3 id="modalTitle">明細を追加</h3>
@@ -278,7 +270,16 @@
       <input type="text" id="mCode" list="codeList" maxlength="8" autocomplete="off"
              autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="04318178">
       <datalist id="codeList"></datalist>
-      <div class="hint" id="mCodeHint">過去に使ったコードは候補に出ます。</div>
+      <div class="hint" id="mCodeHint"></div>
+    </div>
+
+    <div class="field">
+      <label for="mIsin">ISINコード（12桁・任意）</label>
+      <input type="text" id="mIsin" maxlength="12" autocomplete="off"
+             autocapitalize="characters" autocorrect="off" spellcheck="false" placeholder="JP90C000FCD3">
+      <div class="hint">
+        データ取得に必要です。投信総合検索ライブラリーのファンド詳細ページで確認できます。
+      </div>
     </div>
 
     <div class="field">
@@ -304,80 +305,67 @@
 <script>
 "use strict";
 
-const ACCOUNTS = ["積立", "成長投資", "特定"];
+const ACCOUNTS  = ["積立", "成長投資", "特定"];
 const LOTS_KEY  = "toshin-return-lots-v2";
 const CODES_KEY = "toshin-return-codes-v1";
+const ISIN_KEY  = "toshin-return-isin-v1";
+const TAB_KEY   = "toshin-return-tab-v1";
 const $ = (id) => document.getElementById(id);
 
-let lots = [];        // {id, date, amount, code, acct, name}
-let knownCodes = {};  // code -> 銘柄名
+let lots = [];          // {id, date, amount, code, acct, name}
+let knownCodes = {};    // 協会コード -> 銘柄名
+let knownIsins = {};    // 協会コード -> ISIN
+let fundIndex = null;   // data/index.json
 const fundCache = new Map();
-let fundIndex = null; // data/index.json の内容
-let autoFetchBroken = false;
 
 const SERVER_MODE = /^https?:$/.test(location.protocol) && /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
-const CSV_URL = code => `https://toushin-lib.fwg.ne.jp/FdsWeb/FDST030000/csv-file-download?associFundCd=${encodeURIComponent(code)}`;
-const ROUTES = [
-  {name:"allorigins",   url: u => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`},
-  {name:"corsproxy.io", url: u => `https://corsproxy.io/?url=${encodeURIComponent(u)}`},
-  {name:"codetabs",     url: u => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`},
-  {name:"isomorphic",   url: u => `https://cors.isomorphic-git.org/${u}`}
-];
 
-/* ============================ 保存・読み込み ============================ */
+/* ============================ 保存・復元 ============================ */
 function store(){
   try{
     localStorage.setItem(LOTS_KEY,  JSON.stringify(lots));
     localStorage.setItem(CODES_KEY, JSON.stringify(knownCodes));
+    localStorage.setItem(ISIN_KEY,  JSON.stringify(knownIsins));
   }catch(e){}
 }
 function restore(){
-  try{
-    const a = JSON.parse(localStorage.getItem(LOTS_KEY) || "null");
-    if(Array.isArray(a)) lots = a.filter(l => l && l.date && l.code);
-  }catch(e){}
-  try{
-    const c = JSON.parse(localStorage.getItem(CODES_KEY) || "null");
-    if(c && typeof c === "object") knownCodes = c;
-  }catch(e){}
-  // 旧バージョン（表形式）のデータがあれば引き継ぐ
-  if(!lots.length){
-    try{
-      const old = JSON.parse(localStorage.getItem("toshin-return-lots-v1") || "null");
-      if(Array.isArray(old)){
-        old.forEach(o=>{
-          const amt = Number(String(o.amount).replace(/[^\d]/g,""));
-          if(o.date && amt>0 && /^[0-9A-Za-z]{8}$/.test(o.code||""))
-            lots.push({id:newId(), date:o.date, amount:amt, code:o.code,
-                       acct:ACCOUNTS.includes(o.acct)?o.acct:ACCOUNTS[0], name:o.name||""});
-        });
-        if(lots.length) store();
-      }
-    }catch(e){}
-  }
+  const get = k => { try{ return JSON.parse(localStorage.getItem(k) || "null"); }catch(e){ return null; } };
+  const a = get(LOTS_KEY);   if(Array.isArray(a)) lots = a.filter(l => l && l.date && l.code);
+  const c = get(CODES_KEY);  if(c && typeof c === "object") knownCodes = c;
+  const i = get(ISIN_KEY);   if(i && typeof i === "object") knownIsins = i;
 }
 let idSeq = 0;
-function newId(){
-  let id;
-  do { id = "lot" + (++idSeq); } while(lots.some(l => l.id === id));
-  return id;
-}
+function newId(){ let id; do{ id = "lot" + (++idSeq); } while(lots.some(l=>l.id===id)); return id; }
 
 /* ============================ 表示ヘルパー ============================ */
 const comma = n => Math.round(n).toLocaleString("ja-JP");
 const yen = n => (n<0?"−":"") + comma(Math.abs(n)) + " 円";
 const pct = r => (r==null||!isFinite(r)) ? "—" : (r>=0?"+":"−") + (Math.abs(r)*100).toFixed(1) + " %";
 const cls = n => n>0 ? "plus" : n<0 ? "minus" : "";
-const days2y = d => (d/365).toFixed(1) + " 年";
 const esc = s => String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-function setStatus(msg, isErr){
-  const el = $("status"); el.textContent = msg || "";
-  el.style.color = isErr ? "var(--minus)" : "var(--muted)";
-}
 function fundName(code){
   return knownCodes[code] || (fundIndex && fundIndex[code] && fundIndex[code].name) || "";
 }
-function labelFor(lot){ return lot.name || fundName(lot.code) || lot.code; }
+function fundIsin(code){
+  return knownIsins[code] || (fundIndex && fundIndex[code] && fundIndex[code].isin) || "";
+}
+function setStatus(msg, isErr){
+  [$("status"), $("status2")].forEach(el=>{
+    el.textContent = msg || "";
+    el.style.color = isErr ? "var(--minus)" : "var(--muted)";
+  });
+}
+
+/* ============================ タブ ============================ */
+function showTab(which){
+  const isRet = which !== "lots";
+  $("tabReturn").setAttribute("aria-selected", isRet ? "true" : "false");
+  $("tabLots").setAttribute("aria-selected", isRet ? "false" : "true");
+  $("paneReturn").classList.toggle("hidden", !isRet);
+  $("paneLots").classList.toggle("hidden", isRet);
+  try{ localStorage.setItem(TAB_KEY, isRet ? "return" : "lots"); }catch(e){}
+  window.scrollTo({top:0, behavior:"instant" in window ? "instant" : "auto"});
+}
 
 /* ============================ 明細リスト ============================ */
 function renderLots(){
@@ -386,7 +374,7 @@ function renderLots(){
   ul.innerHTML = lots.map(l=>`
     <li data-id="${l.id}">
       <div class="li-main">
-        <div class="li-name">${esc(labelFor(l))}</div>
+        <div class="li-name">${esc(l.name || fundName(l.code) || l.code)}</div>
         <div class="li-sub">${l.date}　<span class="tag">${esc(l.acct)}</span>　${esc(l.code)}</div>
       </div>
       <div class="li-amt">${comma(l.amount)} 円</div>
@@ -398,36 +386,34 @@ function renderLots(){
   $("lotTotal").classList.toggle("hidden", lots.length === 0);
   $("lotTotalVal").textContent = yen(lots.reduce((s,l)=>s+l.amount,0));
 
-  // 協会コードの入力候補
   const codes = new Set([...Object.keys(knownCodes), ...lots.map(l=>l.code)]);
   if(fundIndex) Object.keys(fundIndex).forEach(c=>codes.add(c));
   $("codeList").innerHTML = [...codes].sort().map(c=>{
     const n = fundName(c);
-    return `<option value="${esc(c)}"${n?` label="${esc(c)}　${esc(n)}"`:""}>${n?esc(n):""}</option>`;
+    return `<option value="${esc(c)}"${n?` label="${esc(c)}　${esc(n)}"`:""}></option>`;
   }).join("");
-
-  refreshManualPanel();
 }
 
 /* ============================ モーダル ============================ */
 let editingId = null;
-
 function amountFormat(el){
-  const digits = el.value.replace(/[^\d]/g, "").slice(0, 12);
-  el.value = digits ? Number(digits).toLocaleString("ja-JP") : "";
+  const d = el.value.replace(/[^\d]/g,"").slice(0,12);
+  el.value = d ? Number(d).toLocaleString("ja-JP") : "";
 }
-const amountValue = el => Number(el.value.replace(/[^\d]/g, "")) || 0;
+const amountValue = el => Number(el.value.replace(/[^\d]/g,"")) || 0;
 
 function openModal(id){
   editingId = id || null;
   const l = id ? lots.find(x=>x.id===id) : null;
+  const lastLot = lots.length ? lots[lots.length-1] : null;
   $("modalTitle").textContent = l ? "明細を編集" : "明細を追加";
   $("mDelete").classList.toggle("hidden", !l);
   $("mDate").value = l ? l.date : "";
   $("mAmt").value  = l ? comma(l.amount) : "";
-  $("mCode").value = l ? l.code : (lots.length ? lots[lots.length-1].code : "");
-  $("mAcct").value = l ? l.acct : (lots.length ? lots[lots.length-1].acct : ACCOUNTS[0]);
+  $("mCode").value = l ? l.code : (lastLot ? lastLot.code : "");
+  $("mAcct").value = l ? l.acct : (lastLot ? lastLot.acct : ACCOUNTS[0]);
   $("mName").value = l ? (l.name||"") : "";
+  $("mIsin").value = fundIsin($("mCode").value.trim());
   $("modalErr").textContent = "";
   updateCodeHint();
   $("overlay").classList.add("open");
@@ -442,38 +428,37 @@ function closeModal(){
 function updateCodeHint(){
   const c = $("mCode").value.trim();
   const n = fundName(c);
-  $("mCodeHint").textContent = n ? `${c}：${n}`
-    : "過去に使ったコードは候補に出ます。日経やYahoo!ファイナンスの投信ページで「ファンドコード」として確認できます。";
+  $("mCodeHint").textContent = n ? c + "：" + n : "";
 }
 function saveModal(){
+  const fail = m => { $("modalErr").textContent = m; };
   const date = $("mDate").value.trim();
   const amount = amountValue($("mAmt"));
   const code = $("mCode").value.trim().replace(/\s/g,"");
+  const isin = $("mIsin").value.trim().replace(/\s/g,"").toUpperCase();
   const acct = $("mAcct").value;
   const name = $("mName").value.trim();
 
-  if(!date){ return fail("約定日を入力してください。"); }
-  if(!(amount > 0)){ return fail("金額を入力してください。"); }
-  if(!/^[0-9A-Za-z]{8}$/.test(code)){ return fail("協会コードは英数字8桁で入力してください。"); }
+  if(!date) return fail("約定日を入力してください。");
+  if(!(amount > 0)) return fail("金額を入力してください。");
+  if(!/^[0-9A-Za-z]{8}$/.test(code)) return fail("協会コードは英数字8桁で入力してください。");
+  if(isin && !/^[A-Z]{2}[0-9A-Z]{10}$/.test(isin))
+    return fail("ISINコードは「JP」で始まる12桁の英数字です。");
 
-  if(editingId){
-    const l = lots.find(x=>x.id===editingId);
-    Object.assign(l, {date, amount, code, acct, name});
-  }else{
-    lots.push({id:newId(), date, amount, code, acct, name});
-  }
+  if(editingId) Object.assign(lots.find(x=>x.id===editingId), {date, amount, code, acct, name});
+  else lots.push({id:newId(), date, amount, code, acct, name});
+
   if(name) knownCodes[code] = name;
   else if(!(code in knownCodes)) knownCodes[code] = "";
-  store(); renderLots(); closeModal();
-  setStatus("");
+  if(isin) knownIsins[code] = isin;
 
-  function fail(msg){ $("modalErr").textContent = msg; }
+  store(); renderLots(); closeModal(); calculate();
 }
 function deleteLot(){
   if(!editingId) return;
   if(!confirm("この明細を削除します。よろしいですか？")) return;
   lots = lots.filter(x=>x.id!==editingId);
-  store(); renderLots(); closeModal();
+  store(); renderLots(); closeModal(); calculate();
 }
 
 /* ============================ CSV解析 ============================ */
@@ -493,13 +478,10 @@ function splitCsvLine(line){
   out.push(cur);
   return out.map(s=>s.trim());
 }
-
-/** 協会の生CSV（Shift-JIS・和文ヘッダー）と、data/*.csv の正規化形式の両方に対応 */
 function parseCsvText(text){
-  const lines = text.replace(/\r\n?/g,"\n").split("\n").filter(l => l.trim());
+  const lines = text.replace(/\r\n?/g,"\n").split("\n").filter(l=>l.trim());
   if(!lines.length) throw new Error("CSVが空です");
-  const header = splitCsvLine(lines[0]).map(h => h.replace(/[\s　]/g,"").toLowerCase());
-
+  const header = splitCsvLine(lines[0]).map(h=>h.replace(/[\s　]/g,"").toLowerCase());
   let iDate=-1, iNav=-1, iDiv=-1;
   header.forEach((h,i)=>{
     if(iDate<0 && (/年月日|日付|基準日/.test(h) || h==="date")) iDate=i;
@@ -509,11 +491,10 @@ function parseCsvText(text){
   if(iDate<0) iDate=0;
   if(iNav<0)  iNav=1;
   if(iDiv<0)  iDiv = header.length>3 ? 3 : (header.length===3 ? 2 : -1);
-
   const num = s => {
     s=(s||"").replace(/[",　\s]/g,"");
     if(!s || /^[-－―]$/.test(s)) return null;
-    const n = Number(s); return isFinite(n) ? n : null;
+    const n=Number(s); return isFinite(n)?n:null;
   };
   const rows=[];
   for(let k=1;k<lines.length;k++){
@@ -530,37 +511,24 @@ function parseCsvText(text){
   if(!rows.length) throw new Error("基準価額の行を読み取れませんでした");
   return rows;
 }
-
 function buildTR(rows){
-  const tr = new Array(rows.length); tr[0] = 1;
+  const tr = new Array(rows.length); tr[0]=1;
   for(let i=1;i<rows.length;i++) tr[i] = tr[i-1] * ((rows[i].nav + (rows[i].div||0)) / rows[i-1].nav);
   return tr;
 }
 function idxOnOrBefore(rows, dstr){
   let lo=0, hi=rows.length-1, res=-1;
-  while(lo<=hi){ const mid=(lo+hi)>>1; if(rows[mid].d <= dstr){ res=mid; lo=mid+1; } else hi=mid-1; }
+  while(lo<=hi){ const mid=(lo+hi)>>1; if(rows[mid].d<=dstr){ res=mid; lo=mid+1; } else hi=mid-1; }
   return res;
-}
-function decodeCsv(buf){
-  const bytes = new Uint8Array(buf);
-  for(const enc of ["utf-8","shift_jis"]){
-    try{
-      const t = new TextDecoder(enc, {fatal:false}).decode(bytes);
-      if(/年月日|基準価|^date,/i.test(t)) return t;
-    }catch(e){}
-  }
-  try{ return new TextDecoder("shift_jis").decode(bytes); }
-  catch(e){ return new TextDecoder("utf-8").decode(bytes); }
 }
 
 /* ============================ データ取得 ============================ */
 async function tryFetch(url, ms, opts){
   const ctl = new AbortController();
-  const timer = setTimeout(()=>ctl.abort(), ms);
-  try{ return await fetch(url, Object.assign({signal: ctl.signal}, opts||{})); }
-  finally{ clearTimeout(timer); }
+  const t = setTimeout(()=>ctl.abort(), ms);
+  try{ return await fetch(url, Object.assign({signal:ctl.signal}, opts||{})); }
+  finally{ clearTimeout(t); }
 }
-
 async function loadFundIndex(){
   if(fundIndex !== null) return fundIndex;
   try{
@@ -569,52 +537,31 @@ async function loadFundIndex(){
   }catch(e){ fundIndex = {}; }
   return fundIndex;
 }
-
-function register(code, rows, source){
-  const f = {code, rows, tr: buildTR(rows), source};
-  fundCache.set(code, f);
-  return f;
-}
-
-async function getFund(code, onProgress){
+async function getFund(code){
   if(fundCache.has(code)) return fundCache.get(code);
-
-  // (1) 同一オリジンに置かれたデータ（GitHub Actions が毎営業日更新）
+  // 同一オリジンに置かれたデータ（GitHub Actions が更新）
   try{
-    if(onProgress) onProgress(`${code} のデータを読み込み中…`);
     const res = await tryFetch(`./data/${encodeURIComponent(code)}.csv`, 15000, {cache:"no-cache"});
     if(res.ok){
-      const text = decodeCsv(await res.arrayBuffer());
-      const rows = parseCsvText(text);
-      if(rows.length > 1) return register(code, rows, "repo");
+      const rows = parseCsvText(await res.text());
+      if(rows.length > 1){
+        const f = {code, rows, tr: buildTR(rows)};
+        fundCache.set(code, f); return f;
+      }
     }
   }catch(e){}
-
-  // (2) Mac のローカルサーバー
+  // ローカルサーバー（パソコンで serve.py を使う場合）
   if(SERVER_MODE){
     try{
       const res = await tryFetch(`/api/nav?code=${encodeURIComponent(code)}`, 40000);
       const json = await res.json();
-      if(!json.error) return register(code, json.rows, "local");
+      if(!json.error){
+        const f = {code, rows: json.rows, tr: buildTR(json.rows)};
+        fundCache.set(code, f); return f;
+      }
     }catch(e){}
   }
-
-  // (3) 公開プロキシ経由で協会サイトから直接（動かないことがあります）
-  if(!autoFetchBroken){
-    if(onProgress) onProgress(`${code} を協会サイトから取得中…`);
-    const target = CSV_URL(code);
-    const results = await Promise.allSettled(ROUTES.map(async r => {
-      const res = await tryFetch(r.url(target), 15000);
-      if(!res.ok) throw new Error(`${r.name}: HTTP ${res.status}`);
-      const text = decodeCsv(await res.arrayBuffer());
-      if(!/年月日|基準価/.test(text)) throw new Error(`${r.name}: CSVではない応答`);
-      return parseCsvText(text);
-    }));
-    for(const r of results) if(r.status === "fulfilled") return register(code, r.value, "proxy");
-    autoFetchBroken = true;
-  }
-
-  throw new Error(`${code} の基準価額データがありません`);
+  throw new Error(code);
 }
 
 /* ============================ 計算 ============================ */
@@ -623,10 +570,10 @@ function annualize(factor, days){
   return Math.pow(factor, 365/days) - 1;
 }
 function agg(list){
-  const cost = list.reduce((s,l)=>s+l.amount, 0);
-  const val  = list.reduce((s,l)=>s+l.value, 0);
+  const cost = list.reduce((s,l)=>s+l.amount,0);
+  const val  = list.reduce((s,l)=>s+l.value,0);
   if(cost<=0) return null;
-  const wdays = list.reduce((s,l)=>s+l.amount*l.days, 0)/cost;
+  const wdays = list.reduce((s,l)=>s+l.amount*l.days,0)/cost;
   return {cost, val, pl: val-cost, cum: val/cost-1, wdays, cagr: annualize(val/cost, wdays)};
 }
 
@@ -635,18 +582,29 @@ async function calculate(){
   if(busy) return;
   busy = true; $("calc").disabled = true;
   try{ await runCalc(); }
+  catch(e){ setStatus(e.message, true); }
   finally{ busy = false; $("calc").disabled = false; }
 }
 
 async function runCalc(){
-  if(!lots.length){ setStatus("明細がありません。「＋ 明細を追加する」から登録してください。", true); return; }
+  $("dataMissing").innerHTML = "";
+  $("warnings").innerHTML = "";
+  if(!lots.length){
+    $("fundReturns").innerHTML = "";
+    $("returnEmpty").classList.remove("hidden");
+    $("heroCum").textContent = $("heroCagr").textContent = "—";
+    $("heroCum").className = $("heroCagr").className = "val";
+    $("asOfNote").textContent = "";
+    $("byAcct").innerHTML = $("byLot").innerHTML = "";
+    setStatus("");
+    return;
+  }
   await loadFundIndex();
 
   const warn = [], out = [], missing = [];
-  const codes = [...new Set(lots.map(l=>l.code))];
-  for(const c of codes){
-    try{ await getFund(c, m => setStatus(m)); }
-    catch(e){ warn.push(e.message); missing.push(c); }
+  for(const c of [...new Set(lots.map(l=>l.code))]){
+    setStatus(`${c} のデータを読み込み中…`);
+    try{ await getFund(c); }catch(e){ missing.push(c); }
   }
   renderLots();
 
@@ -658,50 +616,56 @@ async function runCalc(){
     if(i < 0){ warn.push(`${l.code}: ${l.date} はデータ開始日（${f.rows[0].d}）より前のため除外しました`); continue; }
     if(i === last){ warn.push(`${l.code}: ${l.date} が最新データ日以降のため計算できません`); continue; }
     if(f.rows[i].d !== l.date) warn.push(`${l.code}: ${l.date} は非営業日のため直前営業日 ${f.rows[i].d} の基準価額を使用しました`);
-
     const factor = f.tr[last] / f.tr[i];
     const days = Math.round((new Date(f.rows[last].d) - new Date(f.rows[i].d)) / 86400000);
     if(days < 30) warn.push(`${l.date} の買付は保有 ${days} 日と短いため、年率換算値は参考値です`);
-    out.push({...l, fund:f, navAt:f.rows[i].nav, usedDate:f.rows[i].d,
+    out.push({...l, navAt:f.rows[i].nav, usedDate:f.rows[i].d,
               value:l.amount*factor, days, cagr:annualize(factor, days), asOf:f.rows[last].d});
   }
 
+  renderMissing(missing);
   if(!out.length){
-    $("results").classList.add("hidden");
-    setStatus(missing.length
-      ? "基準価額データを取得できませんでした。下の案内を確認してください。"
-      : "計算できる明細がありませんでした。" + (warn[0]||""), true);
+    $("fundReturns").innerHTML = "";
+    $("returnEmpty").classList.remove("hidden");
+    $("heroCum").textContent = $("heroCagr").textContent = "—";
+    $("asOfNote").textContent = "";
+    $("byAcct").innerHTML = $("byLot").innerHTML = "";
+    setStatus(missing.length ? "" : "計算できる明細がありませんでした。", !missing.length);
+    renderWarn(warn);
     return;
   }
-  setStatus(missing.length ? `${missing.join("、")} のデータが未取得のため、その銘柄は除外して計算しました。` : "", missing.length>0);
+  setStatus("");
   render(out, warn);
 }
 
 /* ============================ 描画 ============================ */
 function render(rows, warn){
-  $("results").classList.remove("hidden");
   const total = agg(rows);
-
-  $("summaryCards").innerHTML = [
-    ["投資元本", yen(total.cost), ""], ["評価額", yen(total.val), ""],
-    ["評価損益", yen(total.pl), cls(total.pl)],
-    ["累積リターン", pct(total.cum), cls(total.cum)],
-    ["年率リターン（CAGR）", pct(total.cagr), cls(total.cagr)]
-  ].map(([l,v,c])=>`<div class="card"><div class="lbl">${l}</div><div class="big ${c}">${v}</div></div>`).join("");
+  $("heroCum").textContent  = pct(total.cum);
+  $("heroCum").className    = "val " + cls(total.cum);
+  $("heroCagr").textContent = pct(total.cagr);
+  $("heroCagr").className   = "val " + cls(total.cagr);
 
   const asOf = [...new Set(rows.map(l=>l.asOf))].sort().pop();
-  $("asOfNote").textContent = `評価基準日：${asOf}（各銘柄の最新基準価額）／ 分配金再投資ベース ／ 加重平均保有期間 ${days2y(total.wdays)}`;
+  $("asOfNote").textContent = `評価基準日：${asOf}　／　分配金再投資ベース`;
 
+  // 銘柄別（リターンのみ）
   const byCode = {};
   rows.forEach(l => (byCode[l.code] = byCode[l.code] || []).push(l));
-  $("byFund").innerHTML = Object.entries(byCode).map(([code, ls])=>{
-    const a = agg(ls), nm = ls.map(x=>x.name).find(Boolean) || fundName(code);
-    return `<tr><td>${esc(nm || code)}${nm?`<br><span class="tag">${esc(code)}</span>`:""}</td>
-      <td class="num ${cls(a.cagr)}"><b>${pct(a.cagr)}</b></td><td class="num ${cls(a.cum)}">${pct(a.cum)}</td>
-      <td class="num">${yen(a.cost)}</td><td class="num">${yen(a.val)}</td>
-      <td class="num ${cls(a.pl)}">${yen(a.pl)}</td><td class="num">${days2y(a.wdays)}</td></tr>`;
-  }).join("");
+  const entries = Object.entries(byCode)
+    .map(([code, ls]) => ({code, a: agg(ls), nm: ls.map(x=>x.name).find(Boolean) || fundName(code)}))
+    .sort((x,y) => (y.a.cagr||-9) - (x.a.cagr||-9));
+  $("fundReturns").innerHTML = entries.map(e=>`
+    <li>
+      <div class="fr-name">${esc(e.nm || e.code)}<div class="fr-code">${esc(e.code)}</div></div>
+      <div class="fr-val">
+        <div class="fr-cagr ${cls(e.a.cagr)}">${pct(e.a.cagr)}</div>
+        <div class="fr-cum">累積 <b class="${cls(e.a.cum)}">${pct(e.a.cum)}</b></div>
+      </div>
+    </li>`).join("");
+  $("returnEmpty").classList.add("hidden");
 
+  // 口座種別・買付ごと（明細タブ）
   const byAcct = {};
   rows.forEach(l => (byAcct[l.acct] = byAcct[l.acct] || []).push(l));
   $("byAcct").innerHTML = ACCOUNTS.filter(a=>byAcct[a]).map(a=>{
@@ -710,100 +674,87 @@ function render(rows, warn){
       <td class="num ${cls(g.cum)}">${pct(g.cum)}</td><td class="num">${yen(g.cost)}</td>
       <td class="num">${yen(g.val)}</td><td class="num ${cls(g.pl)}">${yen(g.pl)}</td></tr>`;
   }).join("");
-
   $("byLot").innerHTML = rows.map(l=>
-    `<tr><td>${l.usedDate}</td><td>${esc(labelFor(l))}</td><td>${esc(l.acct)}</td>
+    `<tr><td>${l.usedDate}</td><td>${esc(l.name || fundName(l.code) || l.code)}</td><td>${esc(l.acct)}</td>
       <td class="num">${yen(l.amount)}</td><td class="num">${comma(l.navAt)}</td>
       <td class="num">${yen(l.value)}</td><td class="num ${cls(l.value-l.amount)}">${yen(l.value-l.amount)}</td>
       <td class="num">${l.days}</td><td class="num ${cls(l.cagr)}"><b>${pct(l.cagr)}</b></td></tr>`).join("");
 
+  renderWarn(warn);
+}
+function renderWarn(warn){
   const uniq = [...new Set(warn)];
   $("warnings").innerHTML = uniq.length
     ? `<div class="box warn"><b>注意</b><ul>${uniq.map(w=>`<li>${esc(w)}</li>`).join("")}</ul></div>` : "";
-
-  $("results").scrollIntoView({behavior:"smooth", block:"start"});
 }
 
-/* ============================ 手動読み込み ============================ */
-/** GitHub Pages で開いているとき、リポジトリの編集URLを推測する */
+/** GitHub Pages で開いているとき、リポジトリのURLを推測する */
 function repoUrls(){
   const m = /^([\w-]+)\.github\.io$/.exec(location.hostname);
   if(!m) return null;
   const repo = (location.pathname.split("/").filter(Boolean)[0]) || (m[1] + ".github.io");
-  const base = `https://github.com/${m[1]}/${repo}`;
-  return {funds: `${base}/edit/main/data/funds.txt`,
-          action: `${base}/actions/workflows/update-nav.yml`};
+  return {action: `https://github.com/${m[1]}/${repo}/actions/workflows/update-nav.yml`};
 }
-
-function refreshManualPanel(){
-  const panel = $("manualPanel");
-  const codes = [...new Set(lots.map(l=>l.code))];
-  const pending = codes.filter(c=>!fundCache.has(c));
-
-  // 必要なデータが揃っていれば、この案内は出さない
-  if(!codes.length || !pending.length || !(fundCache.size || autoFetchBroken)){
-    panel.classList.add("hidden");
-    return;
-  }
-
-  panel.classList.remove("hidden");
+function renderMissing(missing){
+  if(!missing.length){ $("dataMissing").innerHTML = ""; return; }
   const u = repoUrls();
-  $("manualMsg").innerHTML =
-    "次の銘柄の基準価額データがまだありません。"
-    + (u ? `<br><b>おすすめ：</b><a href="${u.funds}" target="_blank" rel="noopener">data/funds.txt に協会コードを追加</a>`
-         + `して保存し、<a href="${u.action}" target="_blank" rel="noopener">「基準価額データの更新」を実行</a>`
-         + "すると、以降は自動で取得されます（数分かかります）。"
-       : "リポジトリの data/funds.txt に協会コードを追加し、「基準価額データの更新」を実行すると自動取得されます。")
-    + "<br>今すぐ計算したい場合は、下のリンクからCSVをダウンロードして読み込んでください。";
-  $("csvLinks").innerHTML = pending.map(c=>
-    `<a class="codelink" href="${CSV_URL(c)}" target="_blank" rel="noopener">⬇︎ ${esc(c)} のCSVをダウンロード</a>`).join("");
-  $("loadedList").textContent = fundCache.size ? "読込済み: " + [...fundCache.keys()].join(", ") : "";
-}
-
-function assignCode(fileName){
-  const codes = [...new Set(lots.map(l=>l.code))];
-  const hit = (String(fileName).match(/[0-9A-Za-z]{8}/g)||[]).find(c=>codes.includes(c));
-  return hit || codes.find(c=>!fundCache.has(c)) || null;
-}
-function handleFiles(files){
-  [...files].forEach(file=>{
-    const reader = new FileReader();
-    reader.onload = () => {
-      const code = assignCode(file.name);
-      if(!code){ setStatus(`${file.name}: 対応する協会コードが見つかりません。先に明細を登録してください。`, true); return; }
-      try{
-        register(code, parseCsvText(decodeCsv(reader.result)), "manual");
-        setStatus(`${code} のデータを読み込みました。「リターンを計算」を押してください。`);
-      }catch(e){ setStatus(`${file.name}: ${e.message}`, true); }
-      renderLots();
+  const items = missing.map(c=>{
+    const isin = fundIsin(c);
+    const val = c + (isin ? "," + isin : "");
+    return `<li><code>${esc(val)}</code>
+      <button class="ghost" data-copy="${esc(val)}" style="padding:3px 9px;margin-left:6px">コピー</button>
+      ${isin ? "" : '<br><span style="opacity:.85">ISINコードが未登録です。明細を開いて入力してください。</span>'}</li>`;
+  }).join("");
+  $("dataMissing").innerHTML =
+    `<div class="box warn"><b>基準価額データが未取得です</b><br>
+      ${u ? `<a href="${u.action}" target="_blank" rel="noopener">GitHubの「基準価額データの更新」</a>を開き、`
+          : "GitHubの「基準価額データの更新」を開き、"}
+      Run workflow の入力欄に次の値を貼り付けて実行してください。数分後に自動で反映されます。
+      <ul>${items}</ul></div>`;
+  $("dataMissing").querySelectorAll("[data-copy]").forEach(b=>{
+    b.onclick = async () => {
+      const t = b.getAttribute("data-copy");
+      try{ await navigator.clipboard.writeText(t); b.textContent = "コピー済"; }
+      catch(e){
+        const ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta);
+        ta.select(); try{ document.execCommand("copy"); b.textContent="コピー済"; }catch(_){}
+        ta.remove();
+      }
+      setTimeout(()=>b.textContent="コピー", 1600);
     };
-    reader.readAsArrayBuffer(file);
   });
 }
 
 /* ============================ イベント ============================ */
 $("mAcct").innerHTML = ACCOUNTS.map(a=>`<option>${a}</option>`).join("");
+$("tabReturn").onclick = () => showTab("return");
+$("tabLots").onclick   = () => showTab("lots");
+$("goLots").onclick    = () => showTab("lots");
 $("addLot").onclick = () => openModal(null);
 $("mSave").onclick   = saveModal;
 $("mCancel").onclick = closeModal;
 $("mDelete").onclick = deleteLot;
+$("calc").onclick    = () => { fundCache.clear(); fundIndex = null; calculate(); };
 $("mAmt").addEventListener("input", e => amountFormat(e.target));
 $("mCode").addEventListener("input", e => {
   e.target.value = e.target.value.replace(/[^0-9A-Za-z]/g,"").slice(0,8);
   updateCodeHint();
-  const n = fundName(e.target.value.trim());
-  if(n && !$("mName").value) $("mName").value = n;
+  const c = e.target.value.trim();
+  const n = fundName(c); if(n && !$("mName").value) $("mName").value = n;
+  const s = fundIsin(c); if(s && !$("mIsin").value) $("mIsin").value = s;
+});
+$("mIsin").addEventListener("input", e => {
+  e.target.value = e.target.value.replace(/[^0-9A-Za-z]/g,"").toUpperCase().slice(0,12);
 });
 $("overlay").addEventListener("click", e => { if(e.target === $("overlay")) closeModal(); });
 document.addEventListener("keydown", e => {
-  if(e.key === "Escape" && $("overlay").classList.contains("open")) closeModal();
-  if(e.key === "Enter" && $("overlay").classList.contains("open") && e.target.tagName === "INPUT") saveModal();
+  if(!$("overlay").classList.contains("open")) return;
+  if(e.key === "Escape") closeModal();
+  if(e.key === "Enter" && e.target.tagName === "INPUT") saveModal();
 });
-
-$("calc").onclick = () => calculate().catch(e=>setStatus(e.message, true));
 $("clearAll").onclick = () => {
   if(!confirm("明細をすべて消去します。よろしいですか？")) return;
-  lots = []; store(); renderLots(); $("results").classList.add("hidden"); setStatus("");
+  lots = []; store(); renderLots(); calculate();
 };
 $("bulkToggle").onclick = () => $("bulkArea").classList.toggle("hidden");
 $("bulkApply").onclick = () => {
@@ -823,7 +774,7 @@ $("bulkApply").onclick = () => {
   });
   store(); renderLots();
   setStatus(n ? `${n}件を取り込みました。` : "取り込める行がありませんでした。", !n);
-  if(n){ $("bulkBox").value = ""; $("bulkArea").classList.add("hidden"); }
+  if(n){ $("bulkBox").value = ""; $("bulkArea").classList.add("hidden"); calculate(); }
 };
 $("exportBtn").onclick = () => {
   const lines = ["約定日,金額,協会コード,口座種別,銘柄名"]
@@ -835,26 +786,15 @@ $("exportBtn").onclick = () => {
   setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
   setStatus("明細をCSVで書き出しました。「まとめて入力」から戻せます。");
 };
-$("pasteCsvApply").onclick = () => {
-  const code = ($("pasteCode").value.trim() || assignCode("") || "").replace(/[^0-9A-Za-z]/g,"");
-  if(!/^[0-9A-Za-z]{8}$/.test(code)){ setStatus("協会コード（8桁）を入力してください。", true); return; }
-  try{
-    register(code, parseCsvText($("pasteCsv").value), "manual");
-    setStatus(`${code} のデータを読み込みました。`); $("pasteCsv").value = "";
-  }catch(e){ setStatus(e.message, true); }
-  renderLots();
-};
-
-const drop = $("drop");
-["dragenter","dragover"].forEach(ev => drop.addEventListener(ev, e=>{e.preventDefault();drop.classList.add("over");}));
-["dragleave","drop"].forEach(ev => drop.addEventListener(ev, e=>{e.preventDefault();drop.classList.remove("over");}));
-drop.addEventListener("drop", e => handleFiles(e.dataTransfer.files));
-$("filePick").addEventListener("change", e => handleFiles(e.target.files));
 
 /* ============================ 起動処理 ============================ */
 restore();
 renderLots();
-loadFundIndex().then(()=>renderLots());
+try{ showTab(localStorage.getItem(TAB_KEY) === "lots" ? "lots" : "return"); }
+catch(e){ showTab("return"); }
+// 明細が0件でも銘柄名・ISINの参照表は読み込んでおく（入力補助のため）
+loadFundIndex().then(renderLots);
+calculate();
 
 if("serviceWorker" in navigator && window.isSecureContext){
   window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(()=>{}));
