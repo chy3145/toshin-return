@@ -306,11 +306,9 @@
         <p style="margin:0 0 8px"><b>分配金再投資</b>：基準価額と分配金から日次の再投資指数
           <code>TR(t) = TR(t-1) × (基準価額(t) + 分配金(t)) ÷ 基準価額(t-1)</code> を作り、
           約定日から評価日までの倍率 <code>TR(評価日) ÷ TR(約定日)</code> を各買付に適用します。</p>
-        <p style="margin:0 0 8px"><b>年率リターン（運用利回り）</b>：
-          「すべての買付が同じ年率で、それぞれの保有期間だけ成長した」と考えたときの年率を求めます。
-          <code>Σ 金額 × (1+r)^(保有日数 ÷ 365) = Σ 評価額</code> を満たす <code>r</code> を数値的に解いたものです。
-          保有期間の加重平均で換算する方法と違い、保有期間の短い買付に結果が引きずられません。
-          買付が1件だけのときは <code>倍率^(365 ÷ 保有日数) − 1</code> と一致します。</p>
+        <p style="margin:0 0 8px"><b>年率リターン（CAGR）</b>：買付ごとに <code>倍率^(365 ÷ 保有日数) − 1</code>。
+          銘柄別・全体は、金額を合算した累積リターンを、金額加重の平均保有期間
+          <code>Σ(金額×保有日数) ÷ Σ金額</code> で年率換算します。</p>
         <p style="margin:0"><b>注意</b>：信託報酬は反映済みですが、購入時手数料・税金・ポイント還元は含みません。
           保有期間が短い買付の年率換算値は振れが大きくなります。</p>
       </div>
@@ -746,42 +744,12 @@ function annualize(factor, days){
   if(!isFinite(factor) || factor<=0 || !isFinite(days) || days<=0) return null;
   return Math.pow(factor, 365/days) - 1;
 }
-
-/**
- * 運用利回り（年率）
- * 「すべての買付が同じ年率 r で、それぞれの保有期間だけ成長した」と考えたときの r を解く。
- *   Σ 金額i × (1+r)^(保有日数i / 365) ＝ Σ 評価額i
- * 左辺は r について単調増加なので二分法で必ず1つに収束する。
- * 保有期間の加重平均で年率換算する方法と違い、保有期間が短い買付に引きずられない。
- */
-function solveRate(list){
-  const items = list.filter(l => l.amount > 0 && isFinite(l.days) && l.days >= 0);
-  if(!items.length) return null;
-  if(!items.some(l => l.days > 0)) return null;       // 保有期間が全て0なら利回りは定まらない
-  const V = items.reduce((s, l) => s + l.value, 0);
-  if(!(V > 0)) return null;
-  const grown = r => items.reduce((s, l) => s + l.amount * Math.pow(1 + r, l.days / 365), 0);
-  const f = r => grown(r) - V;
-
-  let lo = -0.999999, hi = 1;
-  if(!isFinite(f(lo))) return null;
-  if(f(lo) >= 0) return lo;                           // ほぼ全損（−100%に近い）
-  let guard = 0;
-  while(f(hi) < 0 && guard++ < 500) hi *= 2;
-  if(f(hi) < 0) return null;                          // 期間が全て0など、解が定まらない
-  for(let k = 0; k < 200; k++){
-    const mid = (lo + hi) / 2;
-    if(f(mid) < 0) lo = mid; else hi = mid;
-  }
-  const r = (lo + hi) / 2;
-  return isFinite(r) ? r : null;
-}
 function agg(list){
   const cost = list.reduce((s,l)=>s+l.amount,0);
   const val  = list.reduce((s,l)=>s+l.value,0);
   if(cost<=0) return null;
   const wdays = list.reduce((s,l)=>s+l.amount*l.days,0)/cost;
-  return {cost, val, pl: val-cost, cum: val/cost-1, wdays, cagr: solveRate(list)};
+  return {cost, val, pl: val-cost, cum: val/cost-1, wdays, cagr: annualize(val/cost, wdays)};
 }
 
 let busy = false;
@@ -901,20 +869,19 @@ function historySeries(){
   });
   const pts = [];
   for(const T of samplePoints(start, end)){
-    const at = [];
     let cost = 0, val = 0, wd = 0;
     for(const x of info){
       if(x.d0 >= T) continue;
       const j = idxOnOrBefore(x.f.rows, T);
       if(j <= x.i) continue;
-      const v = x.amount * (x.f.tr[j] / x.f.tr[x.i]);
-      const days = (new Date(x.f.rows[j].d) - new Date(x.d0)) / 86400000;
-      at.push({amount: x.amount, value: v, days});
-      cost += x.amount; val += v; wd += x.amount * days;
+      cost += x.amount;
+      val  += x.amount * (x.f.tr[j] / x.f.tr[x.i]);
+      wd   += x.amount * ((new Date(x.f.rows[j].d) - new Date(x.d0)) / 86400000);
     }
     if(cost <= 0) continue;
+    const w = wd / cost;                       // 金額加重の平均保有日数
     // 年率は常に持っておく（表や吹き出しで見せる）。グラフだけ短期を除く
-    pts.push({d: T, cum: val / cost - 1, cagr: solveRate(at), days: wd / cost});
+    pts.push({d: T, cum: val / cost - 1, cagr: annualize(val / cost, w), days: w});
   }
   return pts;
 }
